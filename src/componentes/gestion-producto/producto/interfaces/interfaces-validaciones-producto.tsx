@@ -109,24 +109,21 @@ export const schema = () =>
       })
       .typeError("El valor de la presentación debe ser un número")
       .moreThan(0, "El valor de la presentación debe ser mayor a cero")
-      .when("presentacionUnidad", {
-        is: (unidad: string | null | undefined) => unidad != null,
-        then: (schema) =>
-          schema.required("Debe ingresar el valor de la presentación"),
-        otherwise: (schema) => schema.optional(),
+      .test("valor-requerido-con-unidad", "Debe ingresar el valor de la presentación", function (valor) {
+        const unidad = this.parent.presentacionUnidad;
+        return !unidad || (valor !== undefined && valor !== null && !Number.isNaN(valor));
       }),
 
     presentacionUnidad: yup //cr2
       .string()
+      .nullable()
       .oneOf(
         ["L", "ml", "kg", "g", "un", "doc", "caja", "botella", "lata", "sachet", "sobre", "bolsa"],
         "La unidad de presentación no es válida"
       )
-       .when("presentacionValor", {
-        is: (valor: number | null | undefined) => valor != null,
-        then: (schema) =>
-          schema.required("Debe seleccionar una unidad de presentación"),
-        otherwise: (schema) => schema.optional().nullable(),
+      .test("unidad-requerida-con-valor", "Debe seleccionar una unidad de presentación", function (unidad) {
+        const valor = this.parent.presentacionValor;
+        return valor === undefined || valor === null || valor === "" || Boolean(unidad);
       }),
    /*  cantidadOferta: yup.number().when([], {
       is: () => usaOferta,

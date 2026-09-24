@@ -466,18 +466,25 @@ export default function ConsultarProductos() {
       flex: 2,
       type: "text",
       editable: false,
-      formatFunction: ({ value, row }) => (
-        <div className="flex flex-col">
-          <div
-            className="flex items-center gap-1 truncate whitespace-nowrap max-w-[700px]"
-            title={typeof value === "string" ? `${value}${row.observacion ? `\n${row.observacion}` : ""}` : undefined}
-          >
-            <Star size={16} className={row.esAlternativo ? "text-red-500 shrink-0" : "text-yellow-500 shrink-0"} />
-            <span>{value}</span>
+      formatFunction: ({ value, row }) => {
+        const presentacion = row.presentacionDescripcion ??
+          (row.presentacionValor != null && row.presentacionUnidad
+            ? `${row.presentacionValor} ${row.presentacionUnidad}`
+            : "");
+
+        return (
+          <div className="flex flex-col">
+            <div
+              className="flex items-center gap-1 truncate whitespace-nowrap max-w-[700px]"
+              title={typeof value === "string" ? `${value}${presentacion ? ` — ${presentacion}` : ""}${row.observacion ? `\n${row.observacion}` : ""}` : undefined}
+            >
+              <Star size={16} className={row.esAlternativo ? "text-red-500 shrink-0" : "text-yellow-500 shrink-0"} />
+              <span>{value}{presentacion ? ` — ${presentacion}` : ""}</span>
+            </div>
+            {row.observacion && <div className="text-sm text-gray-500 truncate max-w-[700px]">{row.observacion}</div>}
           </div>
-          {row.observacion && <div className="text-sm text-gray-500 truncate max-w-[700px]">{row.observacion}</div>}
-        </div>
-      ),
+        );
+      },
       scrollable: false,
     },
     {
@@ -554,10 +561,6 @@ export default function ConsultarProductos() {
                   onEditar={handleAbrirActualizarProducto}
                   onInfo={handleMostrarInfo}
                   onDelete={handleDelete}
-                  onMovimientos={handleMostrarMovimientosStock}
-                  onCambioPrecios={handleMostrarCambioPrecios}
-                  onHistorial={handleMostrarHistorialPrecios}
-                  onNotificar={handleNotificar}
                 />
                   
                 <div className="lg:hidden space-y-3">
