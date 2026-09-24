@@ -1,17 +1,12 @@
-export interface Superlinea {
+export interface SuperLinea {
   id: number;
-  denominacion: string;
-  observacion: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-  deletedAt: string | null;
-  usuarioCreatedId: number;
-  usuarioDeletedId: number;
-  usuarioUpdatedId: number;
+  nombre: string;
+  descripcion?: string | null;
   sistema: number;
+  deletedAt?: string | null;
 }
 
-export interface SelectSuperlinea {
-  id: number;
-  denominacion: string;
+export interface SuperLineaFormValues {
+  nombre: string;
+  descripcion?: string;
 }

@@ -5,6 +5,7 @@ import {
   observacionesColumnProps,
 } from "../../../herramientas/tablas/formateo-columnas-documentos";
 import type { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
+import type { SuperLinea } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
 import { ActionButton } from "../../../herramientas/reutilizables/action-button";
 import { formatFechaHora } from "../../../herramientas/formateo-de-campos/fucion-formateo";
 
@@ -13,12 +14,13 @@ interface Props {
   onEditar: (id: number) => void;
   onInfo: (id: number) => void;
   onDelete: (id: number) => void;
+  superLineas: SuperLinea[];
 }
 
-export function DatosTabla({ lineas, onEditar, onInfo, onDelete }: Props) {
+export function DatosTabla({ lineas, onEditar, onInfo, onDelete, superLineas }: Props) {
   const columns: Column<Linea>[] = [
     {
-      header: "Denominación",
+      header: "DenominaciÃ³n",
       accessor: "denominacion",
       ...denominacionNotScrollColumnProps,
       formatFunction: ({ value, row }) => (
@@ -33,9 +35,19 @@ export function DatosTabla({ lineas, onEditar, onInfo, onDelete }: Props) {
       ),
     },
     {
-      header: "Observación",
+      header: "ObservaciÃ³n",
       accessor: "observacion",
       ...observacionesColumnProps,
+    },
+    {
+      header: "SuperLínea",
+      accessor: "superLineaId",
+      flex: 1,
+      type: "text",
+      editable: false,
+      formatFunction: ({ value }) => (
+        <span>{superLineas.find((superLinea) => superLinea.id === value)?.nombre ?? "Sin asignar"}</span>
+      ),
     },
   ];
 
@@ -51,7 +63,7 @@ export function DatosTabla({ lineas, onEditar, onInfo, onDelete }: Props) {
 
         return (
           <div className="flex justify-end gap-1">
-            <ActionButton variant="info" title="Ver información" onClick={() => onInfo(row.id)}>
+            <ActionButton variant="info" title="Ver informaciÃ³n" onClick={() => onInfo(row.id)}>
               <Info size={16} />
             </ActionButton>
             <ActionButton variant="edit" title="Editar" onClick={() => onEditar(row.id)}>
@@ -60,7 +72,7 @@ export function DatosTabla({ lineas, onEditar, onInfo, onDelete }: Props) {
             <ActionButton
               variant="delete"
               title="Eliminar"
-              disabled={row.sistema}
+              disabled={row.sistema === 1}
               onClick={() => onDelete(row.id)}
             >
               <Trash size={16} />

@@ -1,4 +1,5 @@
 import type { Linea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
+import type { SuperLinea } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
 import { Info, Pencil, Trash } from "lucide-react";
 import { ActionButton } from "../../../herramientas/reutilizables/action-button";
 import { formatFechaHora } from "../../../herramientas/formateo-de-campos/fucion-formateo";
@@ -8,9 +9,10 @@ interface Props {
   onEditar: (id: number) => void;
   onInfo: (id: number) => void;
   onDelete: (id: number) => void;
+  superLineas: SuperLinea[];
 }
 
-export function DatosCards({ linea, onEditar, onInfo, onDelete }: Props) {
+export function DatosCards({ linea, onEditar, onInfo, onDelete, superLineas }: Props) {
   const eliminada = !!linea.deletedAt;
 
   return (
@@ -22,7 +24,7 @@ export function DatosCards({ linea, onEditar, onInfo, onDelete }: Props) {
       }`}
     >
       <div className="mb-2">
-        <p className="text-xs text-gray-500">Denominación</p>
+        <p className="text-xs text-gray-500">DenominaciÃ³n</p>
         <p className="text-sm font-medium text-gray-800 line-clamp-2">{linea.denominacion}</p>
         {eliminada && (
           <p className="text-xs text-red-500 font-medium mt-0.5">
@@ -33,14 +35,18 @@ export function DatosCards({ linea, onEditar, onInfo, onDelete }: Props) {
 
       {linea.observacion && (
         <div className="mb-3">
-          <p className="text-xs text-gray-500">Observación</p>
+          <p className="text-xs text-gray-500">ObservaciÃ³n</p>
           <p className="text-sm text-gray-700 line-clamp-2">{linea.observacion}</p>
         </div>
       )}
 
+      <div className="mb-3">
+        <p className="text-xs text-gray-500">SuperLínea</p>
+        <p className="text-sm text-gray-700">{superLineas.find((superLinea) => superLinea.id === linea.superLineaId)?.nombre ?? "Sin asignar"}</p>
+      </div>
       {!eliminada && (
         <div className="flex justify-end gap-1 pt-2 border-t border-gray-100">
-          <ActionButton variant="info" onClick={() => onInfo(linea.id)} title="Ver información">
+          <ActionButton variant="info" onClick={() => onInfo(linea.id)} title="Ver informaciÃ³n">
             <Info size={16} />
           </ActionButton>
           <ActionButton variant="edit" onClick={() => onEditar(linea.id)} title="Editar">
@@ -49,7 +55,7 @@ export function DatosCards({ linea, onEditar, onInfo, onDelete }: Props) {
           <ActionButton
             variant="delete"
             onClick={() => onDelete(linea.id)}
-            disabled={linea.sistema}
+            disabled={linea.sistema === 1}
             title="Eliminar"
           >
             <Trash size={16} />

@@ -19,6 +19,8 @@ import { Header } from "../componentes/header";
 import { HeaderLg } from "../componentes/header-lg";
 import { FiltrosLinea, FiltrosLineaValues } from "../componentes/filtros-linea";
 import { getUsuarioId } from "../../../../utils/auth";
+import SuperLineaService from "../../superlinea/services/superlinea-service";
+import type { SuperLinea } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
 
 const NOMBRE_COMPONENTE = "consultar-linea";
 
@@ -27,6 +29,7 @@ export default function ConsultarLineas() {
   // ESTADOS PRINCIPALES
   // ===========================
   const [lineas, setLineas] = useState<Linea[]>([]);
+  const [superLineas, setSuperLineas] = useState<SuperLinea[]>([]);
   const [loading, setLoading] = useState(false);
   const [error] = useState<string | null>(null);
 
@@ -36,13 +39,18 @@ export default function ConsultarLineas() {
   const modal = useLineaModal();
   const usuarioId = getUsuarioId();
 
+  useEffect(() => {
+    SuperLineaService.obtenerTodas().then(setSuperLineas).catch(() => {
+      addAlert({ type: TipoAlerta.ERROR, title: TituloAlerta.ERROR, message: "No se pudieron cargar las SuperLíneas.", autoClose: true });
+    });
+  }, []);
   // ===========================
   // FILTROS LOCALES
   // ===========================
   const [filtrosLinea, setFiltrosLinea] = useState<FiltrosLineaValues>({ denominacion: "" });
 
   // ===========================
-  // PAGINACIÓN
+  // PAGINACIÃ“N
   // ===========================
   const [paginaActual, setPaginaActual] = useState(1);
   const [entidadesTotales, setEntidadesTotales] = useState(0);
@@ -89,7 +97,7 @@ export default function ConsultarLineas() {
     const confirmed = await showConfirmation({
       type: TipoAlertaConfirmacion.DESTRUCTIVE,
       title: TituloAlertaConfirmacion.DESTRUCTIVE,
-      message: "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
+      message: "Â¿EstÃ¡s seguro de que quieres eliminar este elemento? Esta acciÃ³n no se puede deshacer.",
       confirmText: "Eliminar",
       cancelText: "Cancelar",
       onConfirm: () => {},
@@ -111,14 +119,14 @@ export default function ConsultarLineas() {
       addAlert({
         type: TipoAlerta.ERROR,
         title: TituloAlerta.ERROR,
-        message: "No se puede eliminar este elemento porque está siendo utilizada por uno o más productos.",
+        message: "No se puede eliminar este elemento porque estÃ¡ siendo utilizada por uno o mÃ¡s productos.",
         autoClose: true,
       });
     }
   };
 
   // ===========================
-  // BÚSQUEDA
+  // BÃšSQUEDA
   // ===========================
   const handleBuscarLineas = async (botonBuscar?: boolean) => {
     if (botonBuscar) {
@@ -237,7 +245,7 @@ export default function ConsultarLineas() {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4" />
-                <p className="text-gray-600 text-lg">Cargando líneas...</p>
+                <p className="text-gray-600 text-lg">Cargando lÃ­neas...</p>
               </div>
             ) : (
               <>
@@ -248,6 +256,7 @@ export default function ConsultarLineas() {
                     onEditar={handleAbrirEdicion}
                     onInfo={handleMostrarInfo}
                     onDelete={handleDelete}
+                    superLineas={superLineas}
                   />
                 </div>
 
@@ -260,6 +269,7 @@ export default function ConsultarLineas() {
                       onEditar={handleAbrirEdicion}
                       onInfo={handleMostrarInfo}
                       onDelete={handleDelete}
+                      superLineas={superLineas}
                     />
                   ))}
                 </div>
@@ -281,7 +291,7 @@ export default function ConsultarLineas() {
         <AlertasConfirmacion />
       </>
 
-      {/* MODAL ÚNICO */}
+      {/* MODAL ÃšNICO */}
       <LineaModal
         open={modal.tipo !== null}
         tipo={modal.tipo}

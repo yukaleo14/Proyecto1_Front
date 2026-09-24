@@ -13,6 +13,7 @@ import CantidadesInput from "../../../herramientas/formateo-de-campos/cantidades
 import { Producto, SelectPresentacion } from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import { SelectMarca } from "../../../../interfaces/gestion-producto/marca/interfaces-marca";
 import { Linea, SelectLinea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
+import type { SuperLinea } from "../../../../interfaces/gestion-producto/superlinea/interfaces-superlinea";
 import { AlicuotaIva, ResponsePost } from "../../../../interfaces/generales/interfaces-generales";
 import Select from "react-select";
 import { useEnterFocus } from "../../../herramientas/formateo-de-campos/movimiento-campos";
@@ -30,6 +31,7 @@ import MarcasSelector from "../componentes/configuracion/marcas-selector";
 import { getUsuarioId } from "../../../../utils/auth";
 import RegistrarActualizarLineaForm from "../../linea/utils/registrar-actualizar-linea";
 import PorcentajeInput from "../../../herramientas/formateo-de-campos/porcentaje-input";
+import SuperLineaService from "../../superlinea/services/superlinea-service";
 
 
 export default function RegistrarActualizarProductoForm({
@@ -75,9 +77,10 @@ export default function RegistrarActualizarProductoForm({
 
   const [marcas, setMarcas] = React.useState<SelectMarca[]>([]);
   const [lineas, setLineas] = React.useState<SelectLinea[]>([]);
+  const [superLineas, setSuperLineas] = React.useState<SuperLinea[]>([]);
   
-  const [denominacionMarca, setDenominacionMarca] = useState(" ");
-  const [denominacionLinea, setDenominacionLinea] = useState(" ");
+  const [denominacionMarca, setDenominacionMarca] = useState("");
+  const [denominacionLinea, setDenominacionLinea] = useState("");
   const [selectedLinea, setSelectedLinea] = React.useState<SelectLinea>();
   const [selectedMarca, setSelectedMarca] = React.useState<SelectMarca>();
   const [mostrarFormularioLinea, setMostrarFormularioLinea] = useState(false);
@@ -85,6 +88,9 @@ export default function RegistrarActualizarProductoForm({
   const [itemProdAlternativoSinAgregar, setItemProdAlternativoSinAgregar] = useState(false);
 
   const stock = watch(`stock`);
+  const lineaIdSeleccionada = watch("lineaId");
+  const lineaActual = lineas.find((linea) => linea.id === lineaIdSeleccionada) ?? selectedLinea;
+  const superLineaActual = superLineas.find((superLinea) => superLinea.id === lineaActual?.superLineaId);
   
 
   //=============================== CONSTANTES PARA MOVIMIENTO ENTRE CAMPOS ==================================
@@ -106,6 +112,25 @@ export default function RegistrarActualizarProductoForm({
   const enterToDenominacionMarca = useEnterFocus(denominacionMarcaRef);
 
   //=============================== FUNCIONALIDAD ==================================
+
+  useEffect(() => {
+    const cargarOpcionesIniciales = async () => {
+      try {
+        const [respuestaLineas, respuestaMarcas, respuestaSuperLineas] = await Promise.all([
+          ProductoService.obtenerTotales({ denominacion: "" }, "lineas"),
+          ProductoService.obtenerTotales({ denominacion: "" }, "marcas"),
+          SuperLineaService.obtenerTodas(),
+        ]);
+        setLineas(respuestaLineas.data ?? []);
+        setMarcas(respuestaMarcas.data ?? []);
+        setSuperLineas(respuestaSuperLineas);
+      } catch (error) {
+        console.error("No se pudieron cargar Líneas, Marcas o SuperLíneas:", error);
+      }
+    };
+
+    cargarOpcionesIniciales();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -471,10 +496,17 @@ export default function RegistrarActualizarProductoForm({
                     shouldValidate: true,
                   });
 
-                  setLineaSeleccionada(linea as any);
+                  setSelectedLinea(linea ?? undefined);
+                  setLineaSeleccionada(linea as Linea);
                 }}
                 onAgregarLinea={() => setMostrarFormularioLinea(true)}
               />
+
+              {lineaActual && (
+                <p className="px-2 text-sm text-gray-700">
+                  SuperLínea: <span className="font-semibold">{superLineaActual?.nombre ?? "Sin SuperLínea asignada"}</span>
+                </p>
+              )}
 
               <MarcasSelector
                 denominacionMarca={denominacionMarca}
