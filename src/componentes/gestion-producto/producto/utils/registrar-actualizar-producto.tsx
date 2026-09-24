@@ -1,4 +1,4 @@
-// Dibuja el formulario y coordina el guardado, defaultValues = “valores iniciales del formulario”.
+﻿// Dibuja el formulario y coordina el guardado, defaultValues = â€œvalores iniciales del formularioâ€.
 import { useEffect, useRef, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -37,6 +37,31 @@ import {
   UnidadPresentacion,
 } from "../../../../interfaces/gestion-producto/producto/interfaces-producto";import SuperLineaService from "../../superlinea/services/superlinea-service";
 
+//cr5, tar 10: Definir cÃ³mo se genera el nombre automÃ¡tico
+//esta funcion solamente recibe datos y devuelve un texto
+//ejemplo:  { id: 1, denominacion: "Coca-Cola" },
+//          { id: 2, denominacion: "Gaseosas" },
+//          2 
+//           "L" );
+// eso devuelve: Coca-Cola Gaseosas 2L
+const generarDenominacionAutomatica = (
+  marca?: SelectMarca,
+  linea?: SelectLinea,
+  valorPresentacion?: number | null,
+  unidadPresentacion?: UnidadPresentacion | null
+) => {
+  const presentacion =
+    valorPresentacion !== undefined &&
+    valorPresentacion !== null &&
+    unidadPresentacion
+      ? `${valorPresentacion}${unidadPresentacion}`
+      : "";
+
+  return [marca?.denominacion, linea?.denominacion, presentacion]
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase();
+};
 
 export default function RegistrarActualizarProductoForm({
   producto,
@@ -53,7 +78,7 @@ export default function RegistrarActualizarProductoForm({
   const { configuracion } = useConfiguracionSistema();
   const [lineaSeleccionada, setLineaSeleccionada] = useState<Linea>({} as Linea);
 
-  console.log("Configuración del sistema:", configuracion);
+  console.log("ConfiguraciÃ³n del sistema:", configuracion);
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema()),
@@ -62,6 +87,7 @@ export default function RegistrarActualizarProductoForm({
       : {
           alicuotaIva: AlicuotaIva.ALICUOTA_21,
           porcentaje: 15, //cambio cr1, el campo empieza en 15 y el usuario puede escribir, por ejemplo, 25.
+          esDenominacionManual: false, //cr5, tar 10 - Un producto nuevo empieza siempre en modo automÃ¡tico.
         },
   });
 
@@ -108,10 +134,23 @@ export default function RegistrarActualizarProductoForm({
   { value: "bolsa", label: "Bolsa" },
   ];
 
-  const stock = watch(`stock`);
-  const lineaIdSeleccionada = watch("lineaId");
-  const lineaActual = lineas.find((linea) => linea.id === lineaIdSeleccionada) ?? selectedLinea;
-  const superLineaActual = superLineas.find((superLinea) => superLinea.id === lineaActual?.superLineaId);
+const stock = watch("stock");
+const lineaIdSeleccionada = watch("lineaId");
+const marcaIdSeleccionada = watch("marcaId");
+//cr5, tar 10 - watch(...) observa un campo. Cuando cambia, React vuelve a renderizar 
+// el componente. AsÃ­ detectamos cambios de marca, lÃ­nea, valor de presentaciÃ³n, unidad y modo manual.
+const presentacionValor = watch("presentacionValor");
+const presentacionUnidad = watch("presentacionUnidad");
+const esDenominacionManual = watch("esDenominacionManual");
+const denominacionActual = watch("denominacion"); //Ese valor se actualiza en vivo: cuando cambia la marca, la lÃ­nea, la presentaciÃ³n o el nombre manual.
+const lineaActual =
+  selectedLinea ?? lineas.find((linea) => linea.id === lineaIdSeleccionada);
+const marcaActual =
+  marcas.find((marca) => marca.id === marcaIdSeleccionada) ?? selectedMarca;
+const superLineaActual = superLineas.find(
+  (superLinea) =>
+    Number(superLinea.id) === Number(lineaActual?.superLineaId)
+);
   
 
   //=============================== CONSTANTES PARA MOVIMIENTO ENTRE CAMPOS ==================================
@@ -146,7 +185,7 @@ export default function RegistrarActualizarProductoForm({
         setMarcas(respuestaMarcas.data ?? []);
         setSuperLineas(respuestaSuperLineas);
       } catch (error) {
-        console.error("No se pudieron cargar Líneas, Marcas o SuperLíneas:", error);
+        console.error("No se pudieron cargar LÃ­neas, Marcas o SuperLÃ­neas:", error);
       }
     };
 
@@ -187,6 +226,30 @@ export default function RegistrarActualizarProductoForm({
     fetchData();
   }, [producto]);
 
+  useEffect(() => { //cr5 , tar 10
+  if (esDenominacionManual) return; //Si esDenominacionManual es true, termina inmediatamente. No toca el nombre.
+  //Si es false, construye el nombre con los valores actuales.  
+  const nuevaDenominacion = generarDenominacionAutomatica(
+      marcaActual,
+      lineaActual,
+      presentacionValor,
+      presentacionUnidad
+    );
+
+    if (!nuevaDenominacion) return; 
+    setValue("denominacion", nuevaDenominacion, { //setValue actualiza el campo denominaciÃ³n sin que la persona tenga que escribirlo.
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [ //indica quÃ© cambios deben volver a ejecutar esta lÃ³gica.
+    esDenominacionManual,
+    marcaActual?.denominacion,
+    lineaActual?.denominacion,
+    presentacionValor,
+    presentacionUnidad,
+    setValue,
+  ]);
+
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
     // Compatibilidad con la API actual: exige estas banderas aunque ya no sean controles.
@@ -199,19 +262,19 @@ export default function RegistrarActualizarProductoForm({
     };
 
     try {
-      // ⚠️ Validar si hay ítems sin agregar
+      // âš ï¸ Validar si hay Ã­tems sin agregar
       if (itemProdAlternativoSinAgregar) {
         const mensaje = [
           itemProdAlternativoSinAgregar ? "- Hay un producto alternativo sin agregar." : "",
           "",
-          "¿Estás seguro de que querés registrar sin agregarlos?",
+          "Â¿EstÃ¡s seguro de que querÃ©s registrar sin agregarlos?",
         ]
           .filter(Boolean)
           .join("\n");
 
         const confirmar = window.confirm(mensaje);
 
-        if (!confirmar) return; // el usuario canceló
+        if (!confirmar) return; // el usuario cancelÃ³
       }
 
       if (producto) {
@@ -250,7 +313,7 @@ export default function RegistrarActualizarProductoForm({
           console.log("Lineas encontradas:", lineas);
           setLineas(lineas.data);
         } else {
-          console.log("No se encontró una linea con la denominación ingresada.");
+          console.log("No se encontrÃ³ una linea con la denominaciÃ³n ingresada.");
         }
       }
       if (select === "MARCA") {
@@ -259,12 +322,12 @@ export default function RegistrarActualizarProductoForm({
           console.log("Marcas encontradas:", marcas);
           setMarcas(marcas.data);
         } else {
-          console.log("No se encontró una marca con la denominación ingresada.");
+          console.log("No se encontrÃ³ una marca con la denominaciÃ³n ingresada.");
         }
       }
       
     } catch (error) {
-      console.error("Error al buscar por código:", error);
+      console.error("Error al buscar por cÃ³digo:", error);
     }
   };
 
@@ -280,7 +343,7 @@ export default function RegistrarActualizarProductoForm({
         handleBuscarPorDenominacion("MARCA");
       }
 
-      // Esperar un poco (opcional, si el botón hace una búsqueda antes)
+      // Esperar un poco (opcional, si el botÃ³n hace una bÃºsqueda antes)
       setTimeout(() => {
         let selectDiv: HTMLDivElement | null = null;
 
@@ -307,7 +370,7 @@ export default function RegistrarActualizarProductoForm({
             input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
           }
         }
-      }, 300); // Ajustá este delay según el tiempo de búsqueda, si es necesario
+      }, 300); // AjustÃ¡ este delay segÃºn el tiempo de bÃºsqueda, si es necesario
     }
   };
 
@@ -320,8 +383,10 @@ export default function RegistrarActualizarProductoForm({
           title={producto ? "Producto" : "Registrar Producto"}
           subtitle={
             producto
-              ? "Sólo puede visualizarse, no modificarse."
-            : "Ingresa los datos."
+              ? producto.sistema > 0
+                ? "SÃ³lo puede visualizarse, no modificarse."
+                : "ModificÃ¡ los datos del producto."
+              : "CompletÃ¡ la identidad del producto y luego sus datos comerciales."
           }
           icon={<Layers className="form-icon" />}
           onClose={onClose}
@@ -330,127 +395,234 @@ export default function RegistrarActualizarProductoForm({
         {/* Formulario */}
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 px-6 py-4">
-              {/* Primera fila */}
-              <div className="flex flex-col w-full gap-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 col-span-full">
-                  <div className="col-span-full flex items-end gap-2">
+            <CardContent className="grid grid-cols-1 gap-4 px-6 py-4">
+              {/* CR-005 / Tarjeta 10: se movieron Marca, Línea y Presentación al inicio
+                  porque son los datos que construyen la identidad del producto. */}
+              <section className="rounded-xl border border-blue-200 bg-blue-50 p-5 space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Identidad del producto
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    1. Elegí la marca y la línea. 2. Indicá la presentación. 3. El sistema
+                    construye el nombre automáticamente.
+                  </p>
+                </div>
+
+                {/* CR-005: Marca primero; la selección actualiza la denominación automática. */}
+                <MarcasSelector
+                  denominacionMarca={denominacionMarca}
+                  setDenominacionMarca={setDenominacionMarca}
+                  denominacionMarcaRef={denominacionMarcaRef}
+                  selectMarcaRef={selectMarcaRef}
+                  marcas={marcas}
+                  selectedMarca={selectedMarca}
+                  marcaId={watch("marcaId")}
+                  mostrarBusqueda={false}
+                  disabled={Boolean(producto && producto.sistema > 0)}
+                  error={errors.marcaId?.message}
+                  onEnterMarca={(e) => handleEnterEnSelect(e, "MARCA")}
+                  onChangeMarca={(marca) => {
+                    setValue("marcaId", marca?.id ?? 0, {
+                      shouldValidate: true,
+                    });
+                    setSelectedMarca(marca ?? undefined);
+                  }}
+                  onAgregarMarca={() => setMostrarFormularioMarca(true)}
+                />
+
+                {/* CR-005: Línea después de Marca; ambas conforman la denominación. */}
+                <LineasSelector
+                  denominacionLinea={denominacionLinea}
+                  setDenominacionLinea={setDenominacionLinea}
+                  denominacionLineaRef={denominacionLineaRef}
+                  selectLineaRef={selectLineaRef}
+                  lineas={lineas}
+                  selectedLinea={selectedLinea}
+                  lineaId={watch("lineaId")}
+                  mostrarBusqueda={false}
+                  disabled={Boolean(producto && producto.sistema > 0)}
+                  errors={errors}
+                  onEnterLinea={(e) => handleEnterEnSelect(e, "LINEA")}
+                  onEnterDenominacion={enterToDenominacionMarca}
+                  onLineaChange={(linea) => {
+                    setValue("lineaId", linea?.id ?? 0, {
+                      shouldValidate: true,
+                    });
+                    setSelectedLinea(linea ?? undefined);
+                    setLineaSeleccionada(linea as Linea);
+                  }}
+                  onAgregarLinea={() => setMostrarFormularioLinea(true)}
+                />
+
+                {superLineaActual && (
+                  <p className="px-2 text-sm text-gray-700">
+                    SuperLínea:{" "}
+                    <span className="font-semibold">
+                      {superLineaActual.nombre}
+                    </span>
+                  </p>
+                )}
+
+                {/* CR-005: Presentación se carga junto a Marca y Línea, antes de mostrar el nombre final. */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormInput
+                    name="presentacionValor"
+                    label="Valor de presentación"
+                    type="number"
+                    placeholder="Ej.: 1, 500, 1.5"
+                    disabled={Boolean(producto && producto.sistema > 0)}
+                  />
+
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="label-base">Unidad de presentación</label>
+                    <Select
+                      value={
+                        unidadesPresentacion.find(
+                          (unidad) => unidad.value === presentacionUnidad
+                        ) ?? null
+                      }
+                      options={unidadesPresentacion}
+                      placeholder="Seleccioná una unidad"
+                      isClearable
+                      isDisabled={Boolean(producto && producto.sistema > 0)}
+                      onChange={(unidad) => {
+                        setValue("presentacionUnidad", unidad?.value ?? null, {
+                          shouldValidate: true,
+                        });
+                      }}
+                      className="text-black"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      }}
+                    />
+                    {errors.presentacionUnidad && (
+                      <small className="text-red-500">
+                        {errors.presentacionUnidad.message as string}
+                      </small>
+                    )}
+                  </div>
+                </div>
+
+                {/* CR-005: vista dinámica; refleja exactamente la denominación que se guardará. */}
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-5 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                    Así quedará identificado el producto
+                  </p>
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {denominacionActual || "Elegí marca, línea y presentación"}
+                  </p>
+                </div>
+
+                {/* CR-005: el usuario puede reemplazar el nombre generado y volver al modo automático. */}
+                <div className="border-t border-blue-200 pt-4">
+                  <p className="text-sm font-medium text-gray-800">
+                    ¿Querés usar otro nombre?
+                  </p>
+                  <p className="mb-3 text-sm text-gray-600">
+                    Escribí una denominación personalizada. Desde ese momento no se
+                    sobrescribirá al cambiar marca, línea o presentación.
+                  </p>
+
+                  <div className="flex flex-col gap-2 md:flex-row md:items-end">
                     <div className="flex-1">
                       <FormInput
                         name="denominacion"
                         label="Denominación"
                         placeholder="Ingresa la denominación"
-                        disabled={producto && producto.sistema > 0 ? true : false}
+                        disabled={Boolean(producto && producto.sistema > 0)}
                         onKeyDown={enterToObservacion}
                         inputRef={denominacionProductoRef}
+                        convertirAMayusculas
+                        onChange={() => {
+                          setValue("esDenominacionManual", true);
+                        }}
                       />
                     </div>
 
-                    
+                    {esDenominacionManual && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setValue("esDenominacionManual", false);
+                        }}
+                      >
+                        Usar denominación automática
+                      </Button>
+                    )}
                   </div>
+                </div>
+              </section>
 
+              {/* Los campos restantes no cambian la identidad: son datos comerciales e inventario. */}
+              <section className="rounded-xl border border-gray-200 p-5">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Datos comerciales e inventario
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Completá códigos, importes y valores de stock para guardar el producto.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <FormInput
                     name="codigoProveedor"
-                    label="Codigo Interno"
-                    placeholder="Ingresa el Codigo Interno"
-                    disabled={producto && producto.sistema > 0 ? true : false}
+                    label="Código interno"
+                    placeholder="Ingresa el código interno"
+                    disabled={Boolean(producto && producto.sistema > 0)}
                   />
 
                   <FormInput
                     name="codigoReferencia"
-                    label="Codigo Referencia"
-                    placeholder="Ingresa el codigo de referencia"
+                    label="Código de referencia"
+                    placeholder="Ingresa el código de referencia"
+                    disabled={Boolean(producto && producto.sistema > 0)}
                   />
 
                   <FormInput
                     name="codigoBarra"
-                    label="Código De Barra"
+                    label="Código de barra"
                     placeholder="Ingresa el código de barra (opcional)"
                     inputRef={codigoBarraRef}
                     onKeyDown={(e) => handleEnterEnSelect(e, "ALICUOTA-IVA")}
+                    disabled={Boolean(producto && producto.sistema > 0)}
                   />
-
-                  {/* <FormInput
-                    name="costo"
-                    label="Costo"
-                    placeholder="Ingresa el costo"
-                  />
-
-                  <FormInput
-                    name="precio"
-                    label="Precio"
-                    placeholder="Ingresa el precio"
-                  />
-
-                  <FormInput
-                    name="porcentaje"
-                    label="Porcentaje"
-                    placeholder="Ingresa el porcentaje"
-                  /> */}
 
                   <PriceInput
                     name="costo"
                     label="Costo"
-                    value={watch("costo")} //lleva el valor desde el formulario hacia la pantalla.
-                    //watch("costo") -> Observá el valor actual del campo llamado costo
-                    onChange={(value) => setValue("costo", value, { shouldValidate: true })} //lleva lo que el usuario escribió desde la pantalla hacia el formulario.
+                    value={watch("costo")}
+                    onChange={(value) =>
+                      setValue("costo", value, { shouldValidate: true })
+                    }
                     maxDigits={9}
-                    disabled={producto && producto.sistema > 0 ? true : false}
+                    disabled={Boolean(producto && producto.sistema > 0)}
                   />
+
                   <PriceInput
                     name="precio"
                     label="Precio"
-                    value={watch("precio")} 
-                    onChange={(value) => setValue("precio", value, { shouldValidate: true })}
+                    value={watch("precio")}
+                    onChange={(value) =>
+                      setValue("precio", value, { shouldValidate: true })
+                    }
                     maxDigits={9}
-                    disabled={producto && producto.sistema > 0 ? true : false}
+                    disabled={Boolean(producto && producto.sistema > 0)}
                   />
+
                   <PorcentajeInput
                     name="porcentaje"
                     label="Margen (%)"
                     value={watch("porcentaje")}
-                    onChange={(value) => setValue("porcentaje", value, { shouldValidate: true })}
-                    disabled={producto && producto.sistema > 0 ? true : false}
-                  />
-
-                  <FormInput
-                  name="presentacionValor"
-                  label="Valor de presentación"
-                  type="number"
-                  placeholder="Ej.: 1, 500, 1.5"
-                  disabled={Boolean(producto && producto.sistema > 0)}
-                />
-                <div className="space-y-1 sm:space-y-2">
-                  <label className="label-base">Unidad de presentación</label>
-                  <Select
-                    value={
-                      unidadesPresentacion.find(
-                        (unidad) => unidad.value === watch("presentacionUnidad")
-                      ) ?? null
-                      //Busca en la lista cuál opción coincide con el valor que el formulario ya tiene. 
-                      // Esto permite que, al editar un producto 500 ml, el selector muestre Mililitro (ml).
+                    onChange={(value) =>
+                      setValue("porcentaje", value, { shouldValidate: true })
                     }
-                    options={unidadesPresentacion}
-                    placeholder="Seleccioná una unidad"
-                    isClearable
-                    isDisabled={Boolean(producto && producto.sistema > 0)}
-                    onChange={(unidad) => {
-                      setValue("presentacionUnidad", unidad?.value ?? null, {
-                        shouldValidate: true,
-                      });
-                    }}
-                    className="text-black"
-                    menuPortalTarget={document.body}
-                    styles={{
-                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                    }}
+                    disabled={Boolean(producto && producto.sistema > 0)}
                   />
-                  {errors.presentacionUnidad && (
-                    <small className="text-red-500">
-                      {errors.presentacionUnidad.message as string}
-                    </small>
-                  )}
-                </div>
 
                   <FormInput
                     name="ubicacion"
@@ -458,38 +630,48 @@ export default function RegistrarActualizarProductoForm({
                     placeholder="Ingresa una ubicación (opcional)"
                     onKeyDown={(e) => handleEnterEnSelect(e, "TIPO-PRODUCTO")}
                     inputRef={ubicacionRef}
+                    disabled={Boolean(producto && producto.sistema > 0)}
                   />
 
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Alicuota IVA</label>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                      Alícuota IVA
+                    </label>
                     <div ref={selectAlicuotaIvaRef} className="w-full">
                       <Select
                         value={
                           Object.entries(AlicuotaIva)
                             .map(([key, value]) => ({
                               id: value,
-                              denominacion: key === "ALICUOTA_105" ? "10.5" : key.replace("ALICUOTA_", ""),
+                              denominacion:
+                                key === "ALICUOTA_105"
+                                  ? "10.5"
+                                  : key.replace("ALICUOTA_", ""),
                             }))
-                            .find((option) => option.id === watch("alicuotaIva")) || null
+                            .find(
+                              (option) => option.id === watch("alicuotaIva")
+                            ) || null
                         }
-                        options={Object.entries(AlicuotaIva).map(([key, value]) => ({
-                          id: value,
-                          denominacion: key === "ALICUOTA_105" ? "10.5" : key.replace("ALICUOTA_", ""),
-                        }))}
+                        options={Object.entries(AlicuotaIva).map(
+                          ([key, value]) => ({
+                            id: value,
+                            denominacion:
+                              key === "ALICUOTA_105"
+                                ? "10.5"
+                                : key.replace("ALICUOTA_", ""),
+                          })
+                        )}
                         onKeyDown={enterToPrecioOferta}
                         getOptionLabel={(option) => option.denominacion}
                         getOptionValue={(option) => String(option.id)}
-                        isDisabled={producto && producto.sistema > 0 ? true : false}
+                        isDisabled={Boolean(producto && producto.sistema > 0)}
                         onChange={(selectedOption) => {
-                          methods.setValue(`alicuotaIva`, selectedOption?.id || 0);
+                          setValue("alicuotaIva", selectedOption?.id || 0);
                         }}
                         className="text-black"
                         menuPortalTarget={document.body}
                         styles={{
-                          control: (base) => ({
-                            ...base,
-                            color: "black",
-                          }),
+                          control: (base) => ({ ...base, color: "black" }),
                           singleValue: (base) => ({
                             ...base,
                             color: "black",
@@ -497,110 +679,50 @@ export default function RegistrarActualizarProductoForm({
                           option: (base, { isSelected, isFocused }) => ({
                             ...base,
                             color: isSelected ? "white" : "black",
-                            backgroundColor: isSelected ? "#3b82f6" : isFocused ? "#93c5fd" : "white",
+                            backgroundColor: isSelected
+                              ? "#3b82f6"
+                              : isFocused
+                                ? "#93c5fd"
+                                : "white",
                           }),
-                          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                          menuPortal: (base) => ({
+                            ...base,
+                            zIndex: 9999,
+                          }),
                         }}
                       />
                       {errors.alicuotaIva && (
-                        <small className="text-red-500">{errors.alicuotaIva?.message as string}</small>
+                        <small className="text-red-500">
+                          {errors.alicuotaIva.message as string}
+                        </small>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex-1 min-w-[120px]">
-                    {producto ? (
-                      <CantidadesInput
-                        name={`stock`}
-                        label="Stock"
-                        value={stock || 0}
-                        onChange={(value) => setValue(`stock`, Number(value))}
-                        disabled={true}
-                      />
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-6 w-full">
-                  <div className="flex items-center gap-2 flex-1 min-w-[140px]">
-                    <FormInput
-                      name="stockMinimo"
-                      label="Stock mínimo"
-                      placeholder="Ingresá un entero mayor o igual a cero"
-                      defaultValue=""
-                      disabled={Boolean(producto && producto.sistema > 0)}
+                  {producto && (
+                    <CantidadesInput
+                      name="stock"
+                      label="Stock"
+                      value={stock || 0}
+                      onChange={(value) => setValue("stock", Number(value))}
+                      disabled
                     />
-                  </div>
+                  )}
 
-                  
-
+                  <FormInput
+                    name="stockMinimo"
+                    label="Stock mínimo"
+                    placeholder="Ingresá un entero mayor o igual a cero"
+                    defaultValue=""
+                    disabled={Boolean(producto && producto.sistema > 0)}
+                  />
                 </div>
-              </div>
-
-              <div className="flex flex-col w-full gap-2">
-
-              <LineasSelector
-                denominacionLinea={denominacionLinea}
-                setDenominacionLinea={setDenominacionLinea}
-                denominacionLineaRef={denominacionLineaRef}
-                selectLineaRef={selectLineaRef}
-                lineas={lineas}
-                selectedLinea={selectedLinea}
-                lineaId={watch("lineaId")}
-                disabled={producto && producto.sistema > 0}
-                errors={errors}
-                onEnterLinea={(e) => handleEnterEnSelect(e, "LINEA")}
-                onEnterDenominacion={enterToDenominacionMarca}
-                onLineaChange={(linea) => {
-                  methods.setValue("lineaId", linea?.id ?? 0, {
-                    shouldValidate: true,
-                  });
-
-                  setSelectedLinea(linea ?? undefined);
-                  setLineaSeleccionada(linea as Linea);
-                }}
-                onAgregarLinea={() => setMostrarFormularioLinea(true)}
-              />
-
-              {lineaActual && (
-                <p className="px-2 text-sm text-gray-700">
-                  SuperLínea: <span className="font-semibold">{superLineaActual?.nombre ?? "Sin SuperLínea asignada"}</span>
-                </p>
-              )}
-
-              <MarcasSelector
-                denominacionMarca={denominacionMarca}
-                setDenominacionMarca={setDenominacionMarca}
-                denominacionMarcaRef={denominacionMarcaRef}
-                selectMarcaRef={selectMarcaRef}
-                marcas={marcas}
-                selectedMarca={selectedMarca}
-                marcaId={watch("marcaId")}
-                disabled={producto && producto.sistema > 0}
-                error={errors.marcaId?.message}
-                onEnterMarca={(e) => handleEnterEnSelect(e, "MARCA")}
-                onChangeMarca={(marca) => {
-                  methods.setValue("marcaId", marca?.id ?? 0, {
-                    shouldValidate: true,
-                  });
-                }}
-                onAgregarMarca={() => setMostrarFormularioMarca(true)}
-              />
-
-              </div>
-
-              {/* Segunda fila */}
-
-
-              <hr className="col-span-full my-2 border-gray-300" />
-
-              
-              
+              </section>
             </CardContent>
 
             {errors.root?.message && <div className="text-red-600 text-center mb-4">{String(errors.root.message)}</div>}
 
-            {/* Botón de submit */}
+            {/* BotÃ³n de submit */}
             <CardFooter className="flex justify-center">
               <Button type="submit" disabled={isSubmitting} className="btn btn-dark">
                 {isSubmitting
@@ -641,3 +763,7 @@ export default function RegistrarActualizarProductoForm({
     </div>
   );
 }
+
+
+
+

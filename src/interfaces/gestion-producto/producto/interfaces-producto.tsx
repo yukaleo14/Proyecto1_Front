@@ -22,6 +22,7 @@ export interface Producto {
   //
   id: number;
   denominacion: string;
+  esDenominacionManual?: boolean; //cr 5, tajeta 10
   codigoProveedor?: string | null;
   codigoReferencia?: string | null;
   codigoBarra?: string | null;

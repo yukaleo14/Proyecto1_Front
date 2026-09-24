@@ -1,4 +1,4 @@
-import { FormProvider } from "react-hook-form";
+﻿import { FormProvider } from "react-hook-form";
 import { CardContent, CardFooter } from "../../../ui/Card";
 import { Button } from "../../../ui/Button";
 import FormInput from "../../../herramientas/formateo-de-campos/form-input";
@@ -39,7 +39,7 @@ export default function RegistrarActualizarMarcaForm({
       type: TipoAlertaConfirmacion.DEFAULT,
       title: TituloAlertaConfirmacion.DEFAULT,
       message:
-        "¿Estás seguro de que quieres cerrar el formulario? NO se guardaran los cambios.",
+        "Â¿EstÃ¡s seguro de que quieres cerrar el formulario? NO se guardaran los cambios.",
       confirmText: "Aceptar",
       cancelText: "Cancelar",
       onConfirm: () => {},
@@ -58,7 +58,7 @@ export default function RegistrarActualizarMarcaForm({
           title={marca ? `Actualizar ${NOMBRE_ENTIDAD}` : NOMBRE_ENTIDAD}
           subtitle={
             marca
-              ? "Sólo puede visualizarse, no modificarse."
+              ? "SÃ³lo puede visualizarse, no modificarse."
               : "Ingresa los datos."
           }
           icon={<Tag className="form-icon" />}
@@ -70,14 +70,15 @@ export default function RegistrarActualizarMarcaForm({
             <CardContent className="space-y-3 px-3 py-2">
               <FormInput
                 name="denominacion"
-                label="Denominación"
-                placeholder="Ingresa la denominación"
+                label="DenominaciÃ³n"
+                placeholder="Ingresa la denominaciÃ³n"
                 disabled={marca?.sistema ?? false}
+                convertirAMayusculas
               />
               <FormInput
                 name="observacion"
-                label="Observación"
-                placeholder="Ingresa una observación (opcional)"
+                label="ObservaciÃ³n"
+                placeholder="Ingresa una observaciÃ³n (opcional)"
               />
             </CardContent>
 

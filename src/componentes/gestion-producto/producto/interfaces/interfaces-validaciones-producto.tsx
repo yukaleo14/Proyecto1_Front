@@ -1,4 +1,4 @@
-// Define los datos del formulario y sus validaciones con Yup
+﻿// Define los datos del formulario y sus validaciones con Yup
 import * as yup from "yup";
 import { ItemsProdAlternativoEnPayload } from "./interfaces-validaciones-item-prod-alternativo";
 import { AlicuotaIva } from "../../../../interfaces/generales/interfaces-generales";
@@ -24,25 +24,25 @@ export const schema = () =>
     denominacion: yup
       .string()
       .trim() //elimina espacios al inicio y final.
-      .lowercase()
-      .required("La denominación es obligatoria.")
-      .max(255, "Máximo 255 caracteres.")
+      .required("La denominaciÃ³n es obligatoria.")
+      .max(255, "MÃ¡ximo 255 caracteres.")
       .matches(
-      /^[A-Za-z0-9 %-_"'áéíóúÁÉÍÓÚñÑ./]+$/,
-      "Solo se permiten letras, números y espacios."
+      /^[A-Za-z0-9 %-_"'Ã¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ±Ã‘./]+$/,
+      "Solo se permiten letras, nÃºmeros y espacios."
     ),
+    esDenominacionManual: yup.boolean().required(), //cr 5, tajeta 10
     observacion: yup.string().optional().nullable(),
     codigoProveedor: yup.string().optional().nullable(),
     codigoReferencia: yup.string().optional().nullable(),
-    codigoBarra: yup.string().optional().max(255, "Máximo 255 caracteres.").nullable(),
+    codigoBarra: yup.string().optional().max(255, "MÃ¡ximo 255 caracteres.").nullable(),
     stock: yup.number().optional().nullable(),
     costo: yup //cambio de CR1, costo mayor a cero 
       .number()
-      .typeError("El costo debe ser un valor numérico")
+      .typeError("El costo debe ser un valor numÃ©rico")
       .required("El costo es obligatorio")
       .moreThan(0, "El costo debe ser un valor mayor a cero"), //debe ser estrictamente mayor que cero.
     precio: yup.number()
-      .typeError("El precio debe ser un valor númerico")
+      .typeError("El precio debe ser un valor nÃºmerico")
       .required("El precio es obligatorio")
       .moreThan(0, "El precio debe ser un valor mayor a cero")
       .test("precio-mayor-o-igual-costo","El precio debe ser mayor o igual que el costo",
@@ -53,9 +53,9 @@ export const schema = () =>
     }),
     porcentaje: yup //ESTE ES EL MARGEN
       .number() 
-      .typeError("El margen debe ser un valor númerico")
+      .typeError("El margen debe ser un valor nÃºmerico")
       .required("El margen es obligatorio") //Cambio para CR1
-      .min(0,"El margen debe ser mayor o igual a 0"), //acepta margen 0, que es válido, pero rechaza negativos.
+      .min(0,"El margen debe ser mayor o igual a 0"), //acepta margen 0, que es vÃ¡lido, pero rechaza negativos.
     /* costoEnDolar: yup.boolean().optional().nullable(),
     costoDolar: yup.number().optional().nullable(),
     destacado: yup.boolean().optional().nullable(),
@@ -63,23 +63,23 @@ export const schema = () =>
     marcaId: yup
       .number()
       .typeError("La marca es obligatoria.")
-      .required("La marca es obligatoria.") //exige una selección.
-      .transform((value, originalValue) => (originalValue === "" ? null : value)) // Si el valor es una cadena vacía, lo convierte en null.
+      .required("La marca es obligatoria.") //exige una selecciÃ³n.
+      .transform((value, originalValue) => (originalValue === "" ? null : value)) // Si el valor es una cadena vacÃ­a, lo convierte en null.
       .moreThan(0, "Debe seleccionar una marca")
-      .integer("La marca seleccionada no es válida"), 
+      .integer("La marca seleccionada no es vÃ¡lida"), 
     lineaId: yup
       .number()
       .typeError("La linea es obligatoria.")
-      .required("La línea es obligatoria.")
-      .transform((value, originalValue) => (originalValue === "" ? null : value)) // Si el valor es una cadena vacía, lo convierte en null.
+      .required("La lÃ­nea es obligatoria.")
+      .transform((value, originalValue) => (originalValue === "" ? null : value)) // Si el valor es una cadena vacÃ­a, lo convierte en null.
       .moreThan(0, "Debe seleccionar una linea")
-      .integer("La línea seleccionada no es válida"),
+      .integer("La lÃ­nea seleccionada no es vÃ¡lida"),
     alicuotaIva: yup
       .number()
-      .oneOf(Object.values(AlicuotaIva), "Alicuota IVA inválida")
-      .required("La alícuota IVA es obligatoria.")
+      .oneOf(Object.values(AlicuotaIva), "Alicuota IVA invÃ¡lida")
+      .required("La alÃ­cuota IVA es obligatoria.")
       .nullable(),
-    /* ubicacion: yup.string().optional().max(255, "Máximo 255 caracteres.").nullable(),
+    /* ubicacion: yup.string().optional().max(255, "MÃ¡ximo 255 caracteres.").nullable(),
     presentacionId: yup
       .number()
       .typeError("La unidad de medida es obligatoria.")
@@ -89,17 +89,17 @@ export const schema = () =>
     .typeError("La sublinea es obligatoria.")
     .optional()
     .nullable(), */
-    stockMinimo: yup //quitamos .when() Porque hacía que la obligatoriedad dependiera de la opción utilizaStockMinimo. Su historia exige el campo para todos los productos
+    stockMinimo: yup //quitamos .when() Porque hacÃ­a que la obligatoriedad dependiera de la opciÃ³n utilizaStockMinimo. Su historia exige el campo para todos los productos
       .number()
       .transform((value, originalValue) =>
         typeof originalValue === "string" && originalValue.trim() === ""
           ? undefined
           : value
       )
-      .typeError("El stock mínimo debe ser un número")
-      .required("El stock mínimo es obligatorio")
-      .integer("El stock mínimo debe ser un número entero")
-      .min(0, "El stock mínimo debe ser mayor o igual a cero"),
+      .typeError("El stock mÃ­nimo debe ser un nÃºmero")
+      .required("El stock mÃ­nimo es obligatorio")
+      .integer("El stock mÃ­nimo debe ser un nÃºmero entero")
+      .min(0, "El stock mÃ­nimo debe ser mayor o igual a cero"),
     presentacionValor: yup //cr2
       .number()
       .transform((value, originalValue) => {
@@ -107,9 +107,9 @@ export const schema = () =>
           ? undefined
           : value;
       })
-      .typeError("El valor de la presentación debe ser un número")
-      .moreThan(0, "El valor de la presentación debe ser mayor a cero")
-      .test("valor-requerido-con-unidad", "Debe ingresar el valor de la presentación", function (valor) {
+      .typeError("El valor de la presentaciÃ³n debe ser un nÃºmero")
+      .moreThan(0, "El valor de la presentaciÃ³n debe ser mayor a cero")
+      .test("valor-requerido-con-unidad", "Debe ingresar el valor de la presentaciÃ³n", function (valor) {
         const unidad = this.parent.presentacionUnidad;
         return !unidad || (valor !== undefined && valor !== null && !Number.isNaN(valor));
       }),
@@ -119,9 +119,9 @@ export const schema = () =>
       .nullable()
       .oneOf(
         ["L", "ml", "kg", "g", "un", "doc", "caja", "botella", "lata", "sachet", "sobre", "bolsa"],
-        "La unidad de presentación no es válida"
+        "La unidad de presentaciÃ³n no es vÃ¡lida"
       )
-      .test("unidad-requerida-con-valor", "Debe seleccionar una unidad de presentación", function (unidad) {
+      .test("unidad-requerida-con-valor", "Debe seleccionar una unidad de presentaciÃ³n", function (unidad) {
         const valor = this.parent.presentacionValor;
         return valor === undefined || valor === null || valor === "" || Boolean(unidad);
       }),
@@ -169,6 +169,8 @@ export const schema = () =>
 export const transformData = (producto: Producto): FormValues => {
   return {
     denominacion: producto.denominacion,
+    esDenominacionManual: producto.esDenominacionManual ?? false, //cr5 , tarjeta 10. 
+      //?? false significa: si el producto viejo no trae ese dato, asumimos que su denominaciÃ³n es automÃ¡tica.
     observacion: producto.observacion ?? null,
     codigoProveedor: producto.codigoProveedor ?? "",
     codigoReferencia: producto.codigoReferencia ?? "",
@@ -222,3 +224,4 @@ export const transformarItemsProdAlternativo = (items: ItemProdAlternativo[]): I
     usuarioCreatedId: item.usuarioCreatedId,
   }));
 };
+

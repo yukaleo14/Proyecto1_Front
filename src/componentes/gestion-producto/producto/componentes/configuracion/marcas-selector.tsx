@@ -1,4 +1,4 @@
-import { SelectMarca } from "../../../../../interfaces/gestion-producto/marca/interfaces-marca";
+﻿import { SelectMarca } from "../../../../../interfaces/gestion-producto/marca/interfaces-marca";
 import EntidadSelectorBase from "../../../../herramientas/reutilizables/entidad-selector-base";
 
 
@@ -15,6 +15,7 @@ export default function MarcasSelector(props: {
   onEnterMarca: (e: React.KeyboardEvent) => void;
   onChangeMarca: (m: SelectMarca | null) => void;
   onAgregarMarca: () => void;
+  mostrarBusqueda?: boolean;
 }) {
   return (
     <EntidadSelectorBase<SelectMarca>
@@ -31,6 +32,8 @@ export default function MarcasSelector(props: {
       onEnterInput={props.onEnterMarca}
       onChange={props.onChangeMarca}
       onAgregar={props.onAgregarMarca}
+      mostrarBusqueda={props.mostrarBusqueda}
     />
   );
 }
+

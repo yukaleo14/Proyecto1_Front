@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -61,7 +61,7 @@ export default function RegistrarActualizarLineaForm({
       try {
         setSuperLineas(await SuperLineaService.obtenerTodas());
       } catch {
-        setError("root", { type: "manual", message: "No se pudieron cargar las SuperLíneas." });
+        setError("root", { type: "manual", message: "No se pudieron cargar las SuperLÃ­neas." });
       }
     };
     cargarSuperLineas();
@@ -123,7 +123,7 @@ export default function RegistrarActualizarLineaForm({
     const confirmed = await showConfirmation({
       type: TipoAlertaConfirmacion.DEFAULT,
       title: TituloAlertaConfirmacion.DEFAULT,
-      message: "Â¿EstÃ¡s seguro de que quieres cerrar el formulario? NO se guardaran los cambios.",
+      message: "Ã‚Â¿EstÃƒÂ¡s seguro de que quieres cerrar el formulario? NO se guardaran los cambios.",
       confirmText: "Aceptar",
       cancelText: "Cancelar",
       onConfirm: () => {},
@@ -135,8 +135,8 @@ export default function RegistrarActualizarLineaForm({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 overflow-y-auto py-5">
       <Card className="relative w-full max-w-7xl bg-white mx-auto shadow-lg rounded-lg overflow-hidden mt-10 mb-12">
         <EncabezadoFormularios
-          title={linea ? "Actualizar LÃ­nea" : "Registrar LÃ­nea"}
-          subtitle={linea ? "Modifica los detalles de la lÃ­nea." : "Ingresa los datos de la nueva lÃ­nea."}
+          title={linea ? "Actualizar LÃƒÂ­nea" : "Registrar LÃƒÂ­nea"}
+          subtitle={linea ? "Modifica los detalles de la lÃƒÂ­nea." : "Ingresa los datos de la nueva lÃƒÂ­nea."}
           icon={<Layers className="form-icon" />}
           onClose={handleOnClose}
         />
@@ -146,22 +146,22 @@ export default function RegistrarActualizarLineaForm({
             <form onSubmit={handleSubmit(onSubmit)}>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 px-6 py-4">
                 <div className="lg:col-span-2">
-                  <FormInput name="denominacion" label="DenominaciÃ³n" placeholder="Ingresa la denominaciÃ³n" />
+                  <FormInput name="denominacion" label="DenominaciÃƒÂ³n" placeholder="Ingresa la denominaciÃƒÂ³n" convertirAMayusculas />
                 </div>
 
                 <div className="lg:col-span-2">
-                  <FormInput name="observacion" label="ObservaciÃ³n" placeholder="Ingresa una observaciÃ³n (opcional)" />
+                  <FormInput name="observacion" label="ObservaciÃƒÂ³n" placeholder="Ingresa una observaciÃƒÂ³n (opcional)" />
                 </div>
 
                 <div className="lg:col-span-2">
-                  <label className="mb-1 block font-medium">SuperLínea <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block font-medium">SuperLÃ­nea <span className="text-red-500">*</span></label>
                   <Select
                     options={superLineas}
                     value={superLineas.find((superLinea) => superLinea.id === watch("superLineaId")) ?? null}
                     getOptionLabel={(superLinea) => superLinea.nombre}
                     getOptionValue={(superLinea) => String(superLinea.id)}
-                    placeholder="Seleccioná una SuperLínea"
-                    noOptionsMessage={() => "No hay SuperLíneas disponibles"}
+                    placeholder="SeleccionÃ¡ una SuperLÃ­nea"
+                    noOptionsMessage={() => "No hay SuperLÃ­neas disponibles"}
                     menuPortalTarget={document.body}
                     styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                     onChange={(opcion) => setValue("superLineaId", opcion?.id ?? 0, { shouldValidate: true, shouldDirty: true })}
@@ -178,7 +178,7 @@ export default function RegistrarActualizarLineaForm({
                   </label>
                   <CantidadesInput
                     name="stockMinimo"
-                    label="Stock CrÃ­tico"
+                    label="Stock CrÃƒÂ­tico"
                     value={stockMinimo || 0}
                     onChange={(value) => setValue("stockMinimo", Number(value))}
                     disabled={utilizaStockMinimo ? false : true}
@@ -204,3 +204,4 @@ export default function RegistrarActualizarLineaForm({
     </div>
   );
 }
+

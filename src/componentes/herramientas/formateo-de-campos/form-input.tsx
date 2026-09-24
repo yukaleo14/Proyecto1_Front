@@ -1,3 +1,4 @@
+﻿//Permitir detectar cuando escriben
 import { Controller, useFormContext } from "react-hook-form";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "../../ui/Input";
@@ -17,6 +18,8 @@ type FormInputProps = {
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   inputRef?: React.Ref<HTMLInputElement>;
   mask?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; //cr5, tar 10
+  convertirAMayusculas?: boolean;
 };
 
 export default function FormInput({
@@ -33,17 +36,19 @@ export default function FormInput({
   onKeyDown,
   onBlur,
   inputRef,
+  onChange, //cr5, tar 10
+  convertirAMayusculas = false,
 }: FormInputProps) {
   const {
     control,
     formState: { errors },
   } = useFormContext(); // Accede al contexto
 
-  // Hook de máscara (solo si se pasa mask)
+  // Hook de mÃ¡scara (solo si se pasa mask)
   const maskRef = mask
     ? useMask({
         mask,
-        replacement: { _: /\d/ }, // "_" representa un dígito
+        replacement: { _: /\d/ }, // "_" representa un dÃ­gito
       })
     : null;
 
@@ -60,6 +65,10 @@ export default function FormInput({
           render={({ field }) => (
             <Input
               {...field}
+              onChange={(e) => { //c5r, tar 10
+                field.onChange(convertirAMayusculas ? e.target.value.toUpperCase() : e.target.value);
+                onChange?.(e); //ejecuta una acciÃ³n extra solo cuando un formulario la necesita. En este caso, marcar que la denominaciÃ³n fue personalizada
+              }}
               id={name}
               type={type}
               placeholder={placeholder}
@@ -84,3 +93,4 @@ export default function FormInput({
     </div>
   );
 }
+

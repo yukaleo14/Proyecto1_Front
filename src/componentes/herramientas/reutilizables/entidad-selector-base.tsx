@@ -1,4 +1,4 @@
-import Select from "react-select";
+﻿import Select from "react-select";
 import { PlusCircle } from "lucide-react";
 import { Button } from "../../ui/Button";
 
@@ -30,6 +30,7 @@ interface EntidadSelectorBaseProps<T extends EntidadBase> {
   onChange?: (entidad: T | null) => void;
   onAgregar: () => void;
   ocultarAgregar?: boolean;
+  mostrarBusqueda?: boolean;
 }
 
 export default function EntidadSelectorBase<T extends EntidadBase>({
@@ -48,6 +49,7 @@ export default function EntidadSelectorBase<T extends EntidadBase>({
   onChange,
   onAgregar,
   ocultarAgregar = false,
+  mostrarBusqueda = true,
 }: EntidadSelectorBaseProps<T>) {
   return (
     <div className="border border-gray-300 rounded-lg p-2 shadow-sm bg-gray-100">
@@ -56,21 +58,20 @@ export default function EntidadSelectorBase<T extends EntidadBase>({
       </label>
 
       <div className="flex gap-x-4">
-        {/* Input */}
-        <div className="w-80">
-          <input
-            ref={denominacionRef}
-            type="text"
-            placeholder="Denominación"
-            value={denominacion}
-            onChange={(e) =>
-              setDenominacion(e.target.value.trimStart())
-            }
-            onKeyDown={onEnterInput}
-            disabled={disabled}
-            className="w-full border border-gray-300 bg-white text-black rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        {/* Input */}        {mostrarBusqueda && (
+          <div className="w-80">
+            <input
+              ref={denominacionRef}
+              type="text"
+              placeholder="Denominación"
+              value={denominacion}
+              onChange={(e) => setDenominacion(e.target.value.trimStart())}
+              onKeyDown={onEnterInput}
+              disabled={disabled}
+              className="w-full border border-gray-300 bg-white text-black rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        )}
 
         {/* Select */}
         <div ref={selectRef} className="w-full">
@@ -100,7 +101,7 @@ export default function EntidadSelectorBase<T extends EntidadBase>({
           )}
         </div>
 
-        {/* Botón */}
+        {/* BotÃ³n */}
         {!ocultarAgregar && (
           <Button
             type="button"
@@ -133,3 +134,4 @@ const selectStyles = {
   }),
   menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
 };
+
