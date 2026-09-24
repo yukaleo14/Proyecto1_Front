@@ -14,7 +14,6 @@ const baseService = createCrudService<FormValues>("producto");
 const ProductoService = {
   ...baseService,
 
-  
   obtenerMobile: async (filtros: any) => {
     try {
       const token = localStorage.getItem("Token");
@@ -126,6 +125,16 @@ const ProductoService = {
     );
     return data;
   },
+
+  buscarCatalogo: async (filtros: { //Crea una función para buscar productos desde esta pantalla.
+  denominacion?: string;
+  lineaNombre?: string;
+  superLineaNombre?: string;
+  skip: number;
+  take: number;
+  }) => {
+    return ApiService.get("/producto/buscar", filtros); //Hace una petición GET, ej.: GET /producto/buscar?denominacion=coca&lineaNombre=gas
+},
 };
 
 export default ProductoService;

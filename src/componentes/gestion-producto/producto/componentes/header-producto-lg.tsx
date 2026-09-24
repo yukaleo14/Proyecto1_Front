@@ -7,27 +7,29 @@ import { ImpresionForm } from "../../../herramientas/reutilizables/impresion-for
 import { puedeAgregarProducto } from "../domain/permisos-producto";
 
 interface Props {
-  codigo: string;
-  exacto: boolean;
-  roles:number[];
-  onChangeCodigo: (value: string) => void;
-  onChangeExacto: (value: boolean) => void;
-  onBuscarRapido: () => void;
+  roles: number[];
   onNuevo: () => void;
   total: number;
   mostrados: number;
   paginaActual: number;
   onImprimirTodo: () => void;
   onImprimirPagina: () => void;
+  
+  filtrosCatalogo: {
+    denominacion: string;
+    lineaNombre: string;
+    superLineaNombre: string;
+    };
+  onChangeFiltrosCatalogo: (
+    campo: "denominacion" | "lineaNombre" | "superLineaNombre",
+    valor: string
+    ) => void;
 }
 
 export function ProductosHeaderLg({
-  codigo,
-  exacto,
   roles,
-  onChangeCodigo,
-  onChangeExacto,
-  onBuscarRapido,
+  filtrosCatalogo,
+  onChangeFiltrosCatalogo,
   onNuevo,
   total,
   mostrados,
@@ -43,30 +45,43 @@ export function ProductosHeaderLg({
           <span>Productos</span>
         </CardTitle>
 
-        {/* Buscador rápido */}
-        <div className="flex items-center gap-2">
-          <div className="relative max-w-xs w-full">
+        {/* Buscador */}
+        <div className="flex flex-col md:flex-row flex-wrap gap-2 w-full md:w-auto">
+          <div className="relative w-full md:w-52">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              value={codigo}
-              placeholder="Código..."
+              value={filtrosCatalogo.denominacion}
+              placeholder="Denominación..."
               className="text-black pl-10"
-              onChange={(e) => onChangeCodigo(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && onBuscarRapido()}
+              onChange={(e) =>
+                onChangeFiltrosCatalogo("denominacion", e.target.value)
+              }
             />
           </div>
-        </div>
 
-      <div className="flex items-center gap-2">
-
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={exacto}
-              onChange={(e) => onChangeExacto(e.target.checked)}
+          <div className="relative w-full md:w-44">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              value={filtrosCatalogo.lineaNombre}
+              placeholder="Línea..."
+              className="text-black pl-10"
+              onChange={(e) =>
+                onChangeFiltrosCatalogo("lineaNombre", e.target.value)
+              }
             />
-            Exacto
-          </label>
+          </div>
+
+          <div className="relative w-full md:w-48">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              value={filtrosCatalogo.superLineaNombre}
+              placeholder="SuperLínea..."
+              className="text-black pl-10"
+              onChange={(e) =>
+                onChangeFiltrosCatalogo("superLineaNombre", e.target.value)
+              }
+            />
+          </div>
         </div>
 
       </div>
