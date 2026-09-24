@@ -63,6 +63,25 @@ const generarDenominacionAutomatica = (
     .toUpperCase();
 };
 
+//para que el precio quede calculado automáticamente: Solo calcula la vista previa con la misma regla del dominio.
+const calcularPrecioVenta = (
+  costo?: number | null,
+  margen?: number | null
+): number | undefined => {
+  if (
+    costo === undefined ||
+    costo === null ||
+    margen === undefined ||
+    margen === null ||
+    costo <= 0 ||
+    margen < 0
+  ) {
+    return undefined;
+  }
+
+  return Number((costo * (1 + margen / 100)).toFixed(2));
+};
+
 export default function RegistrarActualizarProductoForm({
   producto,
   onClose,
@@ -137,6 +156,9 @@ export default function RegistrarActualizarProductoForm({
 const stock = watch("stock");
 const lineaIdSeleccionada = watch("lineaId");
 const marcaIdSeleccionada = watch("marcaId");
+//Para que el precio quede calculado automáticamente
+const costoActual = watch("costo");
+const margenActual = watch("porcentaje");
 //cr5, tar 10 - watch(...) observa un campo. Cuando cambia, React vuelve a renderizar 
 // el componente. AsÃ­ detectamos cambios de marca, lÃ­nea, valor de presentaciÃ³n, unidad y modo manual.
 const presentacionValor = watch("presentacionValor");
@@ -249,6 +271,18 @@ const superLineaActual = superLineas.find(
     presentacionUnidad,
     setValue,
   ]);
+
+  //Para que el precio quede calculado automáticamente
+  useEffect(() => {
+    const precioCalculado = calcularPrecioVenta(costoActual, margenActual); //El usuario escribe costo o margen.
+
+    if (precioCalculado === undefined) return;
+
+    setValue("precio", precioCalculado, { //guarda ese resultado dentro del formulario.
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [costoActual, margenActual, setValue]);
 
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
@@ -602,17 +636,20 @@ const superLineaActual = superLineas.find(
                     maxDigits={9}
                     disabled={Boolean(producto && producto.sistema > 0)}
                   />
+                  <div>
+                    <PriceInput
+                      name="precio" //Para que el precio quede calculado automáticamente
+                      label="Precio calculado"
+                      value={watch("precio")}
+                      onChange={() => undefined}
+                      maxDigits={9}
+                      disabled //evita que alguien escriba un precio arbitrario.
+                    />
 
-                  <PriceInput
-                    name="precio"
-                    label="Precio"
-                    value={watch("precio")}
-                    onChange={(value) =>
-                      setValue("precio", value, { shouldValidate: true })
-                    }
-                    maxDigits={9}
-                    disabled={Boolean(producto && producto.sistema > 0)}
-                  />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Se calcula automáticamente según costo + margen.
+                    </p>
+                  </div>
 
                   <PorcentajeInput
                     name="porcentaje"

@@ -592,6 +592,7 @@ export default function ConsultarProductos() {
                 puedeAccionar={puedeHacerAcciones(getRoles())}
                 onEditar={handleAbrirActualizarProducto}
                 onInfo={handleMostrarInfo}
+                onHistorial={handleMostrarHistorialPrecios} //tar 15
                 onDelete={handleDelete}
               />
                 <div className="lg:hidden space-y-3">

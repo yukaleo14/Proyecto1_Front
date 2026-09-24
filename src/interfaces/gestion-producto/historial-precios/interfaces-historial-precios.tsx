@@ -38,3 +38,15 @@ export interface ConsultarHistorialPrecios {
   precioOferta: number;
   precioOfertaNuevo: number;
 }
+
+//tar 15
+export interface HistorialPrecioProducto {
+  id: number;
+  productoId: number;
+  precioAnterior: number | null;
+  precioNuevo: number;
+  tipoOperacion: string;
+  motivo: string | null;
+  fechaHora: string;
+  usuarioId: number | null;
+}

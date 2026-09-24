@@ -10,6 +10,7 @@ interface Props {
   puedeAccionar: boolean;
   onEditar: (id: number) => void;
   onInfo: (id: number) => void;
+  onHistorial: (id: number) => void; //tar 15
   onDelete: (id: number) => void;
   
 }
@@ -20,6 +21,7 @@ export function DatosTabla({
   puedeAccionar,
   onEditar,
   onInfo,
+  onHistorial,
   onDelete,
   ...actions
 }: Props) {
@@ -35,6 +37,7 @@ export function DatosTabla({
                   producto={row}
                   onEditar={onEditar}
                   onInfo={onInfo}
+                  onHistorial={onHistorial}
                   onDelete={onDelete}
                 />
               )

@@ -6,6 +6,7 @@ import { createCrudService } from "../../../../utils/crudFactory";
 import type { FormValues } from "../interfaces/interfaces-validaciones-producto";
 import ApiService from "../../../../utils/apiService";
 
+import type { HistorialPrecioProducto } from "../../../../interfaces/gestion-producto/historial-precios/interfaces-historial-precios"; //tar 15
 
 const apiUrl = axiosConfig.apiUrl;
 
@@ -123,6 +124,24 @@ const ProductoService = {
       { precio, tipo, valor },
       { headers },
     );
+    return data;
+  },
+
+   //tar 15
+  obtenerHistorialPrecios: async (
+  productoId: number): 
+  Promise<HistorialPrecioProducto[]> => {
+    const token = localStorage.getItem("Token");
+
+    const headers = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
+    const { data } = await axios.get(
+      `${apiUrl}/productos/${productoId}/historial-precios`,
+      { headers }
+    );
+
     return data;
   },
 
