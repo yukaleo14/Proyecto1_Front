@@ -38,6 +38,7 @@ export default function ConsultarProductos() {
   const [productos, setProductos] = useState<ConsultarProducto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorBusquedaCatalogo, setErrorBusquedaCatalogo] = useState<string | null>(null);
   const [mostrarActualizarProducto, setMostrarActualizarProducto] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState<Producto>({} as Producto);
   const [productoInfo, setProductoInfo] = useState<Producto>({} as Producto);
@@ -435,7 +436,7 @@ export default function ConsultarProductos() {
   setBusquedaRapida(false); //Desactiva la etiqueta roja “Búsqueda rápida”, porque la búsqueda nueva ya no es búsqueda de código
   setBusquedaCatalogoActiva(true); //Marca que ahora la tabla muestra resultados de denominación, Línea y SuperLínea.
   setLoading(true);
-  setError(null);
+  setErrorBusquedaCatalogo(null);
   if (reiniciarPagina) {
     resetearPaginacion();
   }
@@ -452,7 +453,7 @@ export default function ConsultarProductos() {
     setEntidadesTotales(productosFiltrados.total);
   } catch (error) { //muestra un error si falla la petición
     console.error("Error al buscar productos en el catálogo:", error);
-    setError("No se pudieron buscar los productos.");
+    setErrorBusquedaCatalogo("No se pudo completar la búsqueda combinada. La lista anterior se conserva.");
   } finally { //deja de mostrar el indicador de carga, salga bien o mal.
     setLoading(false);
   }
@@ -573,6 +574,11 @@ export default function ConsultarProductos() {
 
               <CardContent className="p-0">
                 <FiltrosAplicados />
+                {errorBusquedaCatalogo && (
+                  <div className="mx-4 mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {errorBusquedaCatalogo}
+                  </div>
+                )}
                 <DatosTabla
                 productos={productos}
                 columns={columns}

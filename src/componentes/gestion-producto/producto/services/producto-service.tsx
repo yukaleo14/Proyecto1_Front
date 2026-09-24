@@ -133,7 +133,7 @@ const ProductoService = {
   skip: number;
   take: number;
   }) => {
-    return ApiService.get("/producto/buscar", filtros); //Hace una petición GET, ej.: GET /producto/buscar?denominacion=coca&lineaNombre=gas
+    return ApiService.get("/productos/buscar", filtros); // La ruta plural evita el conflicto con GET /producto/:id.
 },
 };
 
