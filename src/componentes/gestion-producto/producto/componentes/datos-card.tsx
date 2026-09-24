@@ -102,6 +102,14 @@ export function DatosCard({
           </p>
         </div>
       )}
+      {producto.presentacionDescripcion && (
+        <div className="mb-2">
+          <p className="text-xs text-gray-500">Presentación</p>
+          <p className="text-sm text-gray-800">
+            {producto.presentacionDescripcion}
+          </p>
+        </div>
+      )}
 
       {onNotificar && (
         <ActionButton

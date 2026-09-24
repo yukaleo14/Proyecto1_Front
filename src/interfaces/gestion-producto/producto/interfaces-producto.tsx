@@ -4,6 +4,20 @@ import { SelectSublinea } from "../sublinea/interfaces-sublinea";
 import { ItemProdAlternativo } from "./interfaces-item-prod-alternativo";
 import { ItemProveedor } from "./interfaces-item-proveedor";
 
+export type UnidadPresentacion =
+  | "L"
+  | "ml"
+  | "kg"
+  | "g"
+  | "un"
+  | "doc"
+  | "caja"
+  | "botella"
+  | "lata"
+  | "sachet"
+  | "sobre"
+  | "bolsa";
+
 export interface Producto {
   //
   id: number;
@@ -17,6 +31,8 @@ export interface Producto {
   costo?: number | null;
   precio?: number | null;
   porcentaje?: number | null;
+  presentacionValor?: number | null; //cr2, guarda el número: 1, 500, 1.5.
+  presentacionUnidad?: UnidadPresentacion | null; //cr2, guarda el texto: "L", "ml", "kg".
   //fechaCosto?: string | null;
  /*  costoEnDolar: boolean;
   costoDolar?: number | null;
@@ -84,6 +100,9 @@ export interface ConsultarProducto {
   precioMayoristaConIva: number;
   precioClienteConIva: number;
   precioOfertaConIva: number;
+  presentacionValor?: number | null;
+  presentacionUnidad?: string | null;
+  presentacionDescripcion?: string | null;
 }
 
 

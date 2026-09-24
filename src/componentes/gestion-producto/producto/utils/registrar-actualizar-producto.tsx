@@ -10,7 +10,6 @@ import { Card } from "../../../ui/Card";
 import ProductoService from "../services/producto-service";
 import PriceInput from "../../../herramientas/formateo-de-campos/price-input";
 import CantidadesInput from "../../../herramientas/formateo-de-campos/cantidades-input";
-import { Producto, SelectPresentacion } from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import { SelectMarca } from "../../../../interfaces/gestion-producto/marca/interfaces-marca";
 import { Linea, SelectLinea } from "../../../../interfaces/gestion-producto/linea/interfaces-linea";
 import { AlicuotaIva, ResponsePost } from "../../../../interfaces/generales/interfaces-generales";
@@ -30,7 +29,11 @@ import MarcasSelector from "../componentes/configuracion/marcas-selector";
 import { getUsuarioId } from "../../../../utils/auth";
 import RegistrarActualizarLineaForm from "../../linea/utils/registrar-actualizar-linea";
 import PorcentajeInput from "../../../herramientas/formateo-de-campos/porcentaje-input";
-
+import {
+  Producto,
+  SelectPresentacion,
+  UnidadPresentacion,
+} from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
 
 export default function RegistrarActualizarProductoForm({
   producto,
@@ -83,6 +86,23 @@ export default function RegistrarActualizarProductoForm({
   const [mostrarFormularioLinea, setMostrarFormularioLinea] = useState(false);
   const [mostrarFormularioMarca, setMostrarFormularioMarca] = useState(false);
   const [itemProdAlternativoSinAgregar, setItemProdAlternativoSinAgregar] = useState(false);
+  const unidadesPresentacion: {
+    value: UnidadPresentacion;
+    label: string;
+    }[] = [
+  { value: "L", label: "Litro (L)" },
+  { value: "ml", label: "Mililitro (ml)" },
+  { value: "kg", label: "Kilogramo (kg)" },
+  { value: "g", label: "Gramo (g)" },
+  { value: "un", label: "Unidad (un)" },
+  { value: "doc", label: "Docena (doc)" },
+  { value: "caja", label: "Caja" },
+  { value: "botella", label: "Botella" },
+  { value: "lata", label: "Lata" },
+  { value: "sachet", label: "Sachet" },
+  { value: "sobre", label: "Sobre" },
+  { value: "bolsa", label: "Bolsa" },
+  ];
 
   const stock = watch(`stock`);
   
@@ -366,6 +386,45 @@ export default function RegistrarActualizarProductoForm({
                     onChange={(value) => setValue("porcentaje", value, { shouldValidate: true })}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
+
+                  <FormInput
+                  name="presentacionValor"
+                  label="Valor de presentación"
+                  type="number"
+                  placeholder="Ej.: 1, 500, 1.5"
+                  disabled={Boolean(producto && producto.sistema > 0)}
+                />
+                <div className="space-y-1 sm:space-y-2">
+                  <label className="label-base">Unidad de presentación</label>
+                  <Select
+                    value={
+                      unidadesPresentacion.find(
+                        (unidad) => unidad.value === watch("presentacionUnidad")
+                      ) ?? null
+                      //Busca en la lista cuál opción coincide con el valor que el formulario ya tiene. 
+                      // Esto permite que, al editar un producto 500 ml, el selector muestre Mililitro (ml).
+                    }
+                    options={unidadesPresentacion}
+                    placeholder="Seleccioná una unidad"
+                    isClearable
+                    isDisabled={Boolean(producto && producto.sistema > 0)}
+                    onChange={(unidad) => {
+                      setValue("presentacionUnidad", unidad?.value ?? null, {
+                        shouldValidate: true,
+                      });
+                    }}
+                    className="text-black"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
+                  />
+                  {errors.presentacionUnidad && (
+                    <small className="text-red-500">
+                      {errors.presentacionUnidad.message as string}
+                    </small>
+                  )}
+                </div>
 
                   <FormInput
                     name="ubicacion"

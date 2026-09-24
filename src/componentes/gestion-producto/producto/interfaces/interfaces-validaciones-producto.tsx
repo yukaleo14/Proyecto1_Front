@@ -100,6 +100,34 @@ export const schema = () =>
       .required("El stock mínimo es obligatorio")
       .integer("El stock mínimo debe ser un número entero")
       .min(0, "El stock mínimo debe ser mayor o igual a cero"),
+    presentacionValor: yup //cr2
+      .number()
+      .transform((value, originalValue) => {
+        return typeof originalValue === "string" && originalValue.trim() === ""
+          ? undefined
+          : value;
+      })
+      .typeError("El valor de la presentación debe ser un número")
+      .moreThan(0, "El valor de la presentación debe ser mayor a cero")
+      .when("presentacionUnidad", {
+        is: (unidad: string | null | undefined) => unidad != null,
+        then: (schema) =>
+          schema.required("Debe ingresar el valor de la presentación"),
+        otherwise: (schema) => schema.optional(),
+      }),
+
+    presentacionUnidad: yup //cr2
+      .string()
+      .oneOf(
+        ["L", "ml", "kg", "g", "un", "doc", "caja", "botella", "lata", "sachet", "sobre", "bolsa"],
+        "La unidad de presentación no es válida"
+      )
+       .when("presentacionValor", {
+        is: (valor: number | null | undefined) => valor != null,
+        then: (schema) =>
+          schema.required("Debe seleccionar una unidad de presentación"),
+        otherwise: (schema) => schema.optional().nullable(),
+      }),
    /*  cantidadOferta: yup.number().when([], {
       is: () => usaOferta,
       then: (schema) => schema.required("La cantidad de oferta es obligatoria.").moreThan(0, "La cantidad de oferta debe ser mayor a 0."),
@@ -152,6 +180,7 @@ export const transformData = (producto: Producto): FormValues => {
     costo: producto.costo ?? null,
     precio: producto.precio ?? null,
     porcentaje: producto.porcentaje ?? null,
+    
    // oferta: producto.oferta ?? null,
     /* costoEnDolar: producto.costoEnDolar ?? null,
     costoDolar: producto.costoDolar ?? null,
@@ -166,6 +195,8 @@ export const transformData = (producto: Producto): FormValues => {
     presentacionId: producto.presentacion.id ?? 0,
  */
     stockMinimo: producto.stockMinimo ?? undefined,
+    presentacionValor: producto.presentacionValor ?? undefined,
+    presentacionUnidad: producto.presentacionUnidad ?? null,
  //   cantidadOferta: producto.cantidadOferta ?? 0,
    /*  porcentajeOcasional: producto.porcentajeOcasional ?? 0,
     porcentajeMayorista: producto.porcentajeMayorista ?? 0,
