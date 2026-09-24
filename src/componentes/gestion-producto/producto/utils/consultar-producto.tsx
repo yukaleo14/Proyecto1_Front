@@ -38,6 +38,7 @@ export default function ConsultarProductos() {
   const [productos, setProductos] = useState<ConsultarProducto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorBusquedaCatalogo, setErrorBusquedaCatalogo] = useState<string | null>(null);
   const [mostrarActualizarProducto, setMostrarActualizarProducto] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState<Producto>({} as Producto);
   const [productoInfo, setProductoInfo] = useState<Producto>({} as Producto);
@@ -52,8 +53,14 @@ export default function ConsultarProductos() {
   const [productoNotificacionSeleccionado, setProductoNotificacionSeleccionado] = useState<ProductoNotificacion | null>(null);
   const usuarioId = getUsuarioId();
   const { configuracion } = useConfiguracionSistema();
-  const [codigo, setCodigo] = useState<string>("");
-  const [exacto, setExacto] = useState<boolean>(true);
+  
+  const [filtrosCatalogo, setFiltrosCatalogo] = useState({
+    denominacion: "",
+    lineaNombre: "",
+    superLineaNombre: "",
+    });
+  const [busquedaCatalogoActiva, setBusquedaCatalogoActiva] = useState(false); //guarda si el listado actual viene de esta búsqueda nueva.
+  
   const [auditoria, setAuditoria] = useState<Auditoria>({} as Auditoria);
   const isMounted = useRef(false);
   const inicializacionCompleta = useRef(false);
@@ -114,12 +121,16 @@ export default function ConsultarProductos() {
   }, []);
 
   useEffect(() => {
-    if (!inicializacionCompleta.current) return;
-    const timer = setTimeout(() => {
-      handleBuscarProductosRapido();
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [codigo, exacto]);
+  if (!inicializacionCompleta.current) return;
+  const timer = setTimeout(() => {
+    handleBuscarCatalogo(true);
+  }, 400);
+  return () => clearTimeout(timer);
+  }, [
+  filtrosCatalogo.denominacion,
+  filtrosCatalogo.lineaNombre,
+  filtrosCatalogo.superLineaNombre,
+  ]);
 
   useEffect(() => {
     if (buscar.cont > 0 && buscar.componente === "consultar-producto") {
@@ -394,6 +405,7 @@ export default function ConsultarProductos() {
   };
 
   const handleBuscarProductos = async (botonBuscar?: boolean) => {
+    setBusquedaCatalogoActiva(false);
     setBusquedaRapida(false);
     if (botonBuscar) {
       resetearPaginacion();
@@ -420,33 +432,43 @@ export default function ConsultarProductos() {
     setLoading(false);
   };
 
-  const handleBuscarProductosRapido = async (botonBuscar?: boolean) => {
-    setBusquedaRapida(true);
-    if (botonBuscar) {
-      resetearPaginacion();
-    }
-    setLoading(true);
+  const handleBuscarCatalogo = async (reiniciarPagina = false) => {
+  setBusquedaRapida(false); //Desactiva la etiqueta roja “Búsqueda rápida”, porque la búsqueda nueva ya no es búsqueda de código
+  setBusquedaCatalogoActiva(true); //Marca que ahora la tabla muestra resultados de denominación, Línea y SuperLínea.
+  setLoading(true);
+  setErrorBusquedaCatalogo(null);
+  if (reiniciarPagina) {
+    resetearPaginacion();
+  }
+  try { //intenta consultar el backend.
+    const productosFiltrados = await ProductoService.buscarCatalogo({
+      denominacion: filtrosCatalogo.denominacion,
+      lineaNombre: filtrosCatalogo.lineaNombre,
+      superLineaNombre: filtrosCatalogo.superLineaNombre,
+      skip: reiniciarPagina ? 0 : skip, //Si acabás de cambiar un filtro, consulta desde el primer resultado (0). Si solamente cambiaste de página, usa el skip de la página actual.
+      take,
+    });
 
-    const filtrosConPaginacion = {
-      codigo: codigo,
-      exacto: exacto,
-      skip: skip,
-      take: take,
-    };
-
-    const productosFiltrados = await ProductoService.obtenerRapido(filtrosConPaginacion);
     setProductos(productosFiltrados.data);
     setEntidadesTotales(productosFiltrados.total);
+  } catch (error) { //muestra un error si falla la petición
+    console.error("Error al buscar productos en el catálogo:", error);
+    setErrorBusquedaCatalogo("No se pudo completar la búsqueda combinada. La lista anterior se conserva.");
+  } finally { //deja de mostrar el indicador de carga, salga bien o mal.
     setLoading(false);
+  }
   };
 
   // MANEJO DE PAGINACION ===========================================
 
-  useEffect(() => {
-    if (filtrosInicializados === true) {
-      handleBuscarProductos();
-    }
-  }, [paginaActual, filtrosInicializados, take]);
+ useEffect(() => {
+  if (filtrosInicializados !== true) return;
+  if (busquedaCatalogoActiva) {
+    handleBuscarCatalogo();
+  } else {
+    handleBuscarProductos();
+  }
+}, [paginaActual, filtrosInicializados, take]);
 
   // MANEJO DE PAGINACION ===========================================
 
@@ -521,28 +543,33 @@ export default function ConsultarProductos() {
               {/*  HEADER Desktop */}
               <ProductosHeader
                 roles={getRoles()}
-                codigo={codigo}
-                exacto={exacto}
-                onChangeCodigo={setCodigo}
-                onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
                 paginaActual={paginaActual}
                 onImprimirTodo={handleImprimirTodo}
                 onImprimirPagina={handleImprimirPagina}
+                filtrosCatalogo={filtrosCatalogo}
+                onChangeFiltrosCatalogo={(campo, valor) => {
+                  setFiltrosCatalogo((filtrosAnteriores) => ({ //Conservá los otros filtros.
+                  //Cambiá solamente el campo que el usuario editó.
+                    ...filtrosAnteriores,
+                    [campo]: valor,
+                  }));
+                }}
               />
               </div>
 
               <div className="lg:hidden">
-                <ProductosHeaderLg
-                codigo={codigo}
-                exacto={exacto}
-                roles={getRoles()}
-                onChangeCodigo={setCodigo}
-                onChangeExacto={setExacto}
-                onBuscarRapido={() => handleBuscarProductosRapido(true)}
+              <ProductosHeaderLg
+               roles={getRoles()}
+               filtrosCatalogo={filtrosCatalogo}
+                onChangeFiltrosCatalogo={(campo, valor) => {
+                  setFiltrosCatalogo((filtrosAnteriores) => ({
+                    ...filtrosAnteriores,
+                    [campo]: valor,
+                  }));
+                }}
                 onNuevo={openModal}
                 total={entidadesTotales}
                 mostrados={productos.length}
@@ -554,15 +581,19 @@ export default function ConsultarProductos() {
 
               <CardContent className="p-0">
                 <FiltrosAplicados />
+                {errorBusquedaCatalogo && (
+                  <div className="mx-4 mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {errorBusquedaCatalogo}
+                  </div>
+                )}
                 <DatosTabla
-                  productos={productos}
-                  columns={columns}
-                  puedeAccionar={puedeHacerAcciones(getRoles())}
-                  onEditar={handleAbrirActualizarProducto}
-                  onInfo={handleMostrarInfo}
-                  onDelete={handleDelete}
-                />
-                  
+                productos={productos}
+                columns={columns}
+                puedeAccionar={puedeHacerAcciones(getRoles())}
+                onEditar={handleAbrirActualizarProducto}
+                onInfo={handleMostrarInfo}
+                onDelete={handleDelete}
+              />
                 <div className="lg:hidden space-y-3">
                   {productos.map((producto) => (
                     <DatosCard
