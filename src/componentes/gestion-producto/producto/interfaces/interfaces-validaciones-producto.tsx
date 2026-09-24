@@ -1,3 +1,4 @@
+// Define los datos del formulario y sus validaciones con Yup
 import * as yup from "yup";
 import { ItemsProdAlternativoEnPayload } from "./interfaces-validaciones-item-prod-alternativo";
 import { AlicuotaIva } from "../../../../interfaces/generales/interfaces-generales";
@@ -7,40 +8,8 @@ import { ItemProdAlternativo } from "../../../../interfaces/gestion-producto/pro
 
 //===================== interfaces para las cosas que se van a ingresar en el formulario y es necesario validarlas ==========//
 
-export interface FormValues {
-  denominacion: string;
-  observacion?: string | null;
-  codigoProveedor?: string | null;
-  codigoReferencia?: string | null;
-  codigoBarra?: string | null;
-  stock?: number | null;
-  costo?: number | null;
-  precio?: number | null;
-  porcentaje?: number | null;
-  /* costoEnDolar?: boolean | null;
-  costoDolar?: number | null;
-  destacado?: boolean | null;
-  envioGratis?: boolean | null; */
-  lineaId: number;
-  marcaId: number;
-  /* subLineaId?: number | null */
-  alicuotaIva: number | null;
-  /* ubicacion?: string | null;
-  presentacionId: number; */
-  stockMinimo?: number;
-  cantidadPorPack?: number;
-  utilizaStockMinimo?: boolean;
-  utilizaPack?: boolean;
- /*  porcentajeOcasional: number;
-  precioOcasional: number;
-  porcentajeMayorista: number;
-  precioMayorista: number;
-  porcentajeCliente: number;
-  precioCliente: number;
-  precioOferta: number;*/
- // cantidadOferta?: number;
- // oferta?: boolean; 
-}
+// El tipo se obtiene del esquema para que el formulario y Yup describan los mismos datos.
+export type FormValues = yup.InferType<ReturnType<typeof schema>>;
 
 export interface ItemsProveedorEnPayload {
   codigoProveedor: string;
@@ -50,43 +19,61 @@ export interface ItemsProveedorEnPayload {
 
 //===================== schema de validacion ============================================//
 
-export const schema = (utilizaStockMinimo: boolean, utilizaPack: boolean, usaOferta: boolean) =>
+export const schema = () =>
   yup.object().shape({
     denominacion: yup
       .string()
-      .trim()
+      .trim() //elimina espacios al inicio y final.
       .lowercase()
       .required("La denominación es obligatoria.")
       .max(255, "Máximo 255 caracteres.")
-      .matches(/^[A-Za-z0-9 %-_"'áéíóúÁÉÍÓÚñÑ./]+$/, "Solo se permiten letras, números y espacios."),
+      .matches(
+      /^[A-Za-z0-9 %-_"'áéíóúÁÉÍÓÚñÑ./]+$/,
+      "Solo se permiten letras, números y espacios."
+    ),
     observacion: yup.string().optional().nullable(),
     codigoProveedor: yup.string().optional().nullable(),
     codigoReferencia: yup.string().optional().nullable(),
     codigoBarra: yup.string().optional().max(255, "Máximo 255 caracteres.").nullable(),
     stock: yup.number().optional().nullable(),
-    costo: yup.number().typeError("El costo debe ser un valor númerico").required("El costo es obligatorio").min(0,"El costo debe ser mayor o igual a 0"),
-    precio: yup.number().typeError("El precio debe ser un valor númerico").required("El precio es obligatorio").min(0,"El costo debe ser mayor o igual a 0").test("precio-mayor-o-igual-costo","El precio debe ser mayor o igual que el costo", function(value){
-      const {costo} = this.parent;
-      if (value==null || costo == null ) return true;
-      return value>= costo;
+    costo: yup //cambio de CR1, costo mayor a cero 
+      .number()
+      .typeError("El costo debe ser un valor numérico")
+      .required("El costo es obligatorio")
+      .moreThan(0, "El costo debe ser un valor mayor a cero"), //debe ser estrictamente mayor que cero.
+    precio: yup.number()
+      .typeError("El precio debe ser un valor númerico")
+      .required("El precio es obligatorio")
+      .moreThan(0, "El precio debe ser un valor mayor a cero")
+      .test("precio-mayor-o-igual-costo","El precio debe ser mayor o igual que el costo",
+      function(value){
+        const {costo} = this.parent;
+        if (value==null || costo == null ) return true;
+        return value>= costo;
     }),
-    porcentaje: yup.number().typeError("El porcentaje debe ser un valor númerico").min(0,"El porcentaje mínimo debe ser mayor o igual a 0").max(999, "El porcentaje máximo permitido es de 999").optional().nullable(),
+    porcentaje: yup //ESTE ES EL MARGEN
+      .number() 
+      .typeError("El margen debe ser un valor númerico")
+      .required("El margen es obligatorio") //Cambio para CR1
+      .min(0,"El margen debe ser mayor o igual a 0"), //acepta margen 0, que es válido, pero rechaza negativos.
     /* costoEnDolar: yup.boolean().optional().nullable(),
     costoDolar: yup.number().optional().nullable(),
     destacado: yup.boolean().optional().nullable(),
     envioGratis: yup.boolean().optional().nullable(), */
     marcaId: yup
       .number()
-      .typeError("La linea es obligatoria.")
-      .required("La marca es obligatoria.")
+      .typeError("La marca es obligatoria.")
+      .required("La marca es obligatoria.") //exige una selección.
       .transform((value, originalValue) => (originalValue === "" ? null : value)) // Si el valor es una cadena vacía, lo convierte en null.
-      .required("La marca es obligatoria."),
+      .moreThan(0, "Debe seleccionar una marca")
+      .integer("La marca seleccionada no es válida"), 
     lineaId: yup
       .number()
-      .typeError("La marca es obligatoria.")
+      .typeError("La linea es obligatoria.")
       .required("La línea es obligatoria.")
       .transform((value, originalValue) => (originalValue === "" ? null : value)) // Si el valor es una cadena vacía, lo convierte en null.
-      .required("La linea es obligatoria."),
+      .moreThan(0, "Debe seleccionar una linea")
+      .integer("La línea seleccionada no es válida"),
     alicuotaIva: yup
       .number()
       .oneOf(Object.values(AlicuotaIva), "Alicuota IVA inválida")
@@ -102,23 +89,22 @@ export const schema = (utilizaStockMinimo: boolean, utilizaPack: boolean, usaOfe
     .typeError("La sublinea es obligatoria.")
     .optional()
     .nullable(), */
-    stockMinimo: yup.number().when([], {
-      is: () => utilizaStockMinimo,
-      then: (schema) => schema.required("El Stock minimo es obligatorio.").moreThan(0, "El stock minimo debe ser mayor a 0."),
-      otherwise: (schema) => schema.optional(),
-    }),
-    cantidadPorPack: yup.number().when([], {
-      is: () => utilizaPack,
-      then: (schema) => schema.required("La cantidad por pack es obligatoria.").moreThan(0, "La cantidad por pack debe ser mayor a 0."),
-      otherwise: (schema) => schema.optional(),
-    }),
+    stockMinimo: yup //quitamos .when() Porque hacía que la obligatoriedad dependiera de la opción utilizaStockMinimo. Su historia exige el campo para todos los productos
+      .number()
+      .transform((value, originalValue) =>
+        typeof originalValue === "string" && originalValue.trim() === ""
+          ? undefined
+          : value
+      )
+      .typeError("El stock mínimo debe ser un número")
+      .required("El stock mínimo es obligatorio")
+      .integer("El stock mínimo debe ser un número entero")
+      .min(0, "El stock mínimo debe ser mayor o igual a cero"),
    /*  cantidadOferta: yup.number().when([], {
       is: () => usaOferta,
       then: (schema) => schema.required("La cantidad de oferta es obligatoria.").moreThan(0, "La cantidad de oferta debe ser mayor a 0."),
       otherwise: (schema) => schema.optional(),
     }), */
-    utilizaPack: yup.boolean().optional(),
-    utilizaStockMinimo: yup.boolean().optional(),
     /* porcentajeOcasional: yup
       .number()
       .typeError("El porcentaje ocasional es obligatorio.")
@@ -179,10 +165,7 @@ export const transformData = (producto: Producto): FormValues => {
    /*  subLineaId: producto.sublinea?.id ?? 0,
     presentacionId: producto.presentacion.id ?? 0,
  */
-    stockMinimo: producto.stockMinimo ?? null,
-    cantidadPorPack: producto.cantidadPorPack ?? null,
-    utilizaStockMinimo: producto.utilizaStockMinimo,
-    utilizaPack: producto.utilizaPack,
+    stockMinimo: producto.stockMinimo ?? undefined,
  //   cantidadOferta: producto.cantidadOferta ?? 0,
    /*  porcentajeOcasional: producto.porcentajeOcasional ?? 0,
     porcentajeMayorista: producto.porcentajeMayorista ?? 0,

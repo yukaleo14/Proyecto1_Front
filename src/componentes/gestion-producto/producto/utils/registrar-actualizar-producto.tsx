@@ -1,3 +1,4 @@
+// Dibuja el formulario y coordina el guardado, defaultValues = “valores iniciales del formulario”.
 import { useEffect, useRef, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -44,19 +45,17 @@ export default function RegistrarActualizarProductoForm({
   const usuarioId = getUsuarioId();
 
   const { configuracion } = useConfiguracionSistema();
-  const [rStockCritico, setStockCritico] = useState(false);
-  const [pack, setPack] = useState(false);
-  const [usaOferta, setUsaOferta] = useState(false);
   const [lineaSeleccionada, setLineaSeleccionada] = useState<Linea>({} as Linea);
 
   console.log("Configuración del sistema:", configuracion);
 
   const methods = useForm<FormValues>({
-    resolver: yupResolver(schema(rStockCritico, pack, usaOferta)),
+    resolver: yupResolver(schema()),
     defaultValues: producto
       ? transformData(producto)
       : {
           alicuotaIva: AlicuotaIva.ALICUOTA_21,
+          porcentaje: 15, //cambio cr1, el campo empieza en 15 y el usuario puede escribir, por ejemplo, 25.
         },
   });
 
@@ -86,10 +85,6 @@ export default function RegistrarActualizarProductoForm({
   const [itemProdAlternativoSinAgregar, setItemProdAlternativoSinAgregar] = useState(false);
 
   const stock = watch(`stock`);
-  const stockMinimo = watch("stockMinimo");
-  const cantidadPorPack = watch("cantidadPorPack");
-  const utilizaStockMinimo = watch("utilizaStockMinimo");
-  const utilizaPack = watch("utilizaPack");
   
 
   //=============================== CONSTANTES PARA MOVIMIENTO ENTRE CAMPOS ==================================
@@ -113,27 +108,6 @@ export default function RegistrarActualizarProductoForm({
   //=============================== FUNCIONALIDAD ==================================
 
   useEffect(() => {
-    if (!utilizaStockMinimo) {
-      setValue("stockMinimo", 0);
-    }
-    if (!utilizaPack) {
-      setValue("cantidadPorPack", 0);
-    }
-    
-  }, [utilizaStockMinimo, utilizaPack, false, setValue]);
-
-  useEffect(() => {
-    setValue("stockMinimo", lineaSeleccionada.stockMinimo || 0);
-    setValue("utilizaStockMinimo", lineaSeleccionada.utilizaStockMinimo || false);
-  }, [lineaSeleccionada]);
-
-  useEffect(() => {
-    setPack(utilizaPack || false);
-    setStockCritico(utilizaStockMinimo || false);
-    setUsaOferta(false);
-  }, [utilizaPack, utilizaStockMinimo, false]);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
         if (producto) {
@@ -154,10 +128,7 @@ export default function RegistrarActualizarProductoForm({
           //setValue("oferta", producto.oferta || false);
           setValue("alicuotaIva", producto.alicuotaIva || 0);
 
-          setValue("stockMinimo", producto.stockMinimo || 0);
-          setValue("utilizaStockMinimo", producto.utilizaStockMinimo || false);
-          setValue("cantidadPorPack", producto.cantidadPorPack || 0);
-          setValue("utilizaPack", producto.utilizaPack || false);
+          setValue("stockMinimo", producto.stockMinimo ?? undefined);
         
           console.error("llega aca", producto);
         
@@ -172,6 +143,14 @@ export default function RegistrarActualizarProductoForm({
 
   const onSubmit = async (formData: FormValues) => {
     let response: ResponsePost;
+    // Compatibilidad con la API actual: exige estas banderas aunque ya no sean controles.
+    // Al editar, conservar los datos heredados de pack; los productos nuevos no usan pack.
+    const datosProducto = {
+      ...formData,
+      utilizaStockMinimo: true,
+      utilizaPack: producto?.utilizaPack ?? false,
+      cantidadPorPack: producto?.cantidadPorPack ?? 0,
+    };
 
     try {
       // ⚠️ Validar si hay ítems sin agregar
@@ -191,14 +170,14 @@ export default function RegistrarActualizarProductoForm({
 
       if (producto) {
         const payload = {
-          ...formData,
+          ...datosProducto,
           usuarioUpdatedId: usuarioId,
         };
 
         response = await ProductoService.actualizar(producto.id, payload);
       } else {
         const payload = {
-          ...formData,
+          ...datosProducto,
           usuarioCreatedId: usuarioId,
         };
 
@@ -243,7 +222,7 @@ export default function RegistrarActualizarProductoForm({
     }
   };
 
-  const handleEnterEnSelect = async (e: React.KeyboardEvent<HTMLInputElement>, select: string) => {
+  const handleEnterEnSelect = async (e: React.KeyboardEvent<Element>, select: string) => {
     if (e.key === "Enter") {
       e.preventDefault();
 
@@ -366,29 +345,27 @@ export default function RegistrarActualizarProductoForm({
                   <PriceInput
                     name="costo"
                     label="Costo"
-                    value={watch("costo") || 0}
-                    onChange={(value) => setValue("costo", value, { shouldValidate: true })}
+                    value={watch("costo")} //lleva el valor desde el formulario hacia la pantalla.
+                    //watch("costo") -> Observá el valor actual del campo llamado costo
+                    onChange={(value) => setValue("costo", value, { shouldValidate: true })} //lleva lo que el usuario escribió desde la pantalla hacia el formulario.
                     maxDigits={9}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
                   <PriceInput
                     name="precio"
                     label="Precio"
-                    value={watch("precio") || 0}
+                    value={watch("precio")} 
                     onChange={(value) => setValue("precio", value, { shouldValidate: true })}
                     maxDigits={9}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
                   <PorcentajeInput
                     name="porcentaje"
-                    label="Porcentaje"
-                    value={watch("porcentaje") || 0}
+                    label="Margen (%)"
+                    value={watch("porcentaje")}
                     onChange={(value) => setValue("porcentaje", value, { shouldValidate: true })}
                     disabled={producto && producto.sistema > 0 ? true : false}
                   />
-
-                  
-
 
                   <FormInput
                     name="ubicacion"
@@ -461,48 +438,17 @@ export default function RegistrarActualizarProductoForm({
 
                 <div className="flex flex-wrap gap-6 w-full">
                   <div className="flex items-center gap-2 flex-1 min-w-[140px]">
-                    <div className="col-span-full flex flex-wrap gap-4 mt-8">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          {...methods.register("utilizaStockMinimo")}
-                          className={` w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500`}
-                          disabled={producto && producto.sistema > 0 ? true : false}
-                        />
-                      </label>
-                    </div>
-
-                    <CantidadesInput
-                      name={`stockMinimo`}
-                      label="Stock Crítico"
-                      value={stockMinimo || 0}
-                      onChange={(value) => setValue(`stockMinimo`, Number(value))}
-                      disabled={utilizaStockMinimo ? false : true}
+                    <FormInput
+                      name="stockMinimo"
+                      label="Stock mínimo"
+                      placeholder="Ingresá un entero mayor o igual a cero"
+                      defaultValue=""
+                      disabled={Boolean(producto && producto.sistema > 0)}
                     />
                   </div>
 
                   
 
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-1 min-w-[140px]">
-                    <div className="col-span-full flex flex-wrap gap-4 mt-8">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          {...methods.register("utilizaPack")}
-                          className={`w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500`}
-                          disabled={producto && producto.sistema > 0 ? true : false}
-                        />
-                      </label>
-                    </div>
-
-                    <CantidadesInput
-                      name={`cantidadPorPack`}
-                      label="Cantidad Pack"
-                      value={cantidadPorPack || 0}
-                      onChange={(value) => setValue(`cantidadPorPack`, Number(value))}
-                      disabled={utilizaPack ? false : true}
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -521,7 +467,10 @@ export default function RegistrarActualizarProductoForm({
                 onEnterLinea={(e) => handleEnterEnSelect(e, "LINEA")}
                 onEnterDenominacion={enterToDenominacionMarca}
                 onLineaChange={(linea) => {
-                  methods.setValue("lineaId", linea?.id || 0);
+                  methods.setValue("lineaId", linea?.id ?? 0, {
+                    shouldValidate: true,
+                  });
+
                   setLineaSeleccionada(linea as any);
                 }}
                 onAgregarLinea={() => setMostrarFormularioLinea(true)}
@@ -539,7 +488,9 @@ export default function RegistrarActualizarProductoForm({
                 error={errors.marcaId?.message}
                 onEnterMarca={(e) => handleEnterEnSelect(e, "MARCA")}
                 onChangeMarca={(marca) => {
-                  methods.setValue("marcaId", marca?.id || 0);
+                  methods.setValue("marcaId", marca?.id ?? 0, {
+                    shouldValidate: true,
+                  });
                 }}
                 onAgregarMarca={() => setMostrarFormularioMarca(true)}
               />

@@ -1,8 +1,9 @@
+//Proporciona las operaciones para comunicarse con el backend
 import axios from "axios";
 import axiosConfig from "../../../../utils/axiosConfig";
 
 import { createCrudService } from "../../../../utils/crudFactory";
-import { FormValues } from "../interfaces/interfaces-validaciones-item-prod-alternativo";
+import type { FormValues } from "../interfaces/interfaces-validaciones-producto";
 import ApiService from "../../../../utils/apiService";
 
 

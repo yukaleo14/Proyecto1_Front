@@ -6,10 +6,10 @@ import { useFormContext } from "react-hook-form";
 interface PorcentajeInputProps {
   name: string;
   label: string;
-  value: number;
+  value: number | null | undefined;
   disabled?: boolean;
   className?: string;
-  onChange: (value: number) => void;
+  onChange: (value: number | undefined) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputRef?: React.Ref<HTMLInputElement>;
 }
@@ -43,13 +43,8 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "-") {
-      e.preventDefault();
-      onChange(0);
-      return;
-    }
-    onKeyDown?.(e);
-  };
+  onKeyDown?.(e);
+};
 
   return (
     <div className="space-y-1 sm:space-y-2">
@@ -68,14 +63,15 @@ const PorcentajeInput: React.FC<PorcentajeInputProps> = ({
           allowedDecimalSeparators={[",", "."]}
           decimalScale={2}
           fixedDecimalScale
-          allowNegative={false}
+          allowNegative
           disabled={disabled}
           isAllowed={(values) => {
             const current = values.floatValue ?? 0;
             return current <= 999;
           }}
-          onValueChange={(values) => {
-            onChange(values.floatValue ?? 0);
+          onValueChange={(values) => { //onValueChange se ejecuta cuando cambia el valor numérico.
+            onChange(values.floatValue); //values.floatValue contiene el número sin formato
+            //onChange(...) comunica ese número al componente que lo está usando.
           }}
           onFocus={handleFocus}
           className={

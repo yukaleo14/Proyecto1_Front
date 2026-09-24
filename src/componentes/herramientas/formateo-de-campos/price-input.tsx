@@ -1,3 +1,4 @@
+//Dibuja un campo de dinero y controla cómo se escribe
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { NumericFormat } from "react-number-format";
 import { Label } from "../../ui/Label";
@@ -6,11 +7,11 @@ import { useFormContext } from "react-hook-form";
 interface PriceInputProps {
   name: string;
   label?: string;
-  value: number;
+  value: number | null | undefined;
   prefix?: string;
   disabled?: boolean;
   className?: string;
-  onChange: (value: number) => void;
+  onChange: (value: number | undefined) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void; 
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputRef?: React.Ref<HTMLInputElement>;
@@ -43,13 +44,8 @@ const PriceInput = forwardRef<HTMLInputElement, PriceInputProps>(
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "-") {
-        e.preventDefault();
-        onChange(0);
-        return;
-      }
       onKeyDown?.(e);
-    };
+    };//Ahora el componente no toma decisiones de negocio. Solo procesa el teclado y, si otro componente necesita reaccionar a una tecla, ejecuta la función opcional onKeyDown.
 
     return (
       <div className={`space-y-1 sm:space-y-2 `}>
@@ -77,10 +73,10 @@ const PriceInput = forwardRef<HTMLInputElement, PriceInputProps>(
               return currentValue <= maxValue;
             }}
             fixedDecimalScale
-            allowNegative={false}
+            allowNegative //permite escribir valores negativos pero salta el mensaje de error
             prefix={prefix ? `${prefix} ` : "$"}
             onValueChange={(values) => {
-              onChange(values.floatValue ?? 0); // si es undefined, setea 0
+              onChange(values.floatValue); //es para que yup mande el mensaje de alerta, si ponemos ?? 0 un campo vacio se convertia en cero y es incorrecto
             }}
             onFocus={handleFocus}
             className={
