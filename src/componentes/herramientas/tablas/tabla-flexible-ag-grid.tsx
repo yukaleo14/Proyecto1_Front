@@ -128,7 +128,8 @@ export function TablaAGGrid<T extends Record<string, any>>({
         cellRenderer: (params: any) => (
           <div
             style={{
-              maxWidth: "200px", // 👈 Limita explícitamente el ancho visible
+              width: "100%",
+              maxWidth: "100%",
               overflowX: actionsScrollable ? "auto" : "hidden",
               whiteSpace: actionsScrollable ? "nowrap" : "normal",
             }}
@@ -137,7 +138,7 @@ export function TablaAGGrid<T extends Record<string, any>>({
               style={{
                 display: "flex",
                 gap: "0.5rem",
-                minWidth: actionsScrollable ? "300px" : "auto", // 👈 Asegura que el contenido desborde
+                minWidth: actionsScrollable ? "max-content" : "auto",
                 height: "100%",
                 boxSizing: "border-box",
                 alignItems: "center",

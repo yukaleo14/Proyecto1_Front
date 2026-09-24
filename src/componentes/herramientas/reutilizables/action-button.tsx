@@ -1,4 +1,4 @@
-import { Info, Pencil, Trash } from "lucide-react";
+﻿import { Info, Pencil, Trash } from "lucide-react";
 import { Button } from "../../ui/Button";
 import { JSX, ReactNode } from "react";
 
@@ -10,6 +10,7 @@ interface ActionButtonProps {
   disabled?: boolean;
   title?: string;
   children: ReactNode;
+  className?: string;
 }
 
 const variantConfig: Record<
@@ -36,6 +37,7 @@ export function ActionButton({
   disabled = false,
   title,
   children,
+  className: classNamePersonalizada,
 }: ActionButtonProps) {
   const { className, icon } = variantConfig[variant];
 
@@ -48,10 +50,11 @@ export function ActionButton({
       className={`
         ${className}
         ${disabled ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed" : ""}
-        w-8 h-8
+        ${classNamePersonalizada ?? "w-8 h-8"}
       `}
     >
       {children}
     </Button>
   );
 }
+

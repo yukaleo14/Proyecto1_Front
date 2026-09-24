@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { Info, Pencil, Trash, Box, CircleDollarSign, Shuffle, Star } from "lucide-react";
 import { Button } from "../../../ui/Button";
 import ProductoService from "../services/producto-service";
@@ -22,6 +22,7 @@ import { useFiltrosIniciales } from "../../../../hooks/useFiltrosIniciales";
 import { useCatalogosContext } from "../../../../context/catalogos-context";
 import { ProductosHeader } from "../componentes/header-producto";
 import { ProductosModales } from "../modales/producto-modales";
+import AjustarStockModal from "../componentes/ajustar-stock-modal";
 import { usePaginacion } from "../../../../hooks/use-paginacion";
 import { PAGINACION } from "../../../../config/paginacion";
 import { useProductoImpresion } from "../hooks/use-producto-impresion";
@@ -44,6 +45,8 @@ export default function ConsultarProductos() {
   const [productoInfo, setProductoInfo] = useState<Producto>({} as Producto);
   const [mostrarInfoAuditoria, setMostrarInfoAuditoria] = useState(false);
   const [mostrarMovimientosStock, setMostrarMovimientosStock] = useState(false);
+  // Tarjeta 20: controla el formulario que crea un ajuste y su movimiento asociado.
+  const [mostrarAjusteStock, setMostrarAjusteStock] = useState(false);
   const [mostrarHistorialPrecios, setMostrarHistorialPrecios] = useState(false);
   const [mostrarCambioPrecios, setMostrarCambioPrecios] = useState(false);
   const [mostrarProductosAlternativos, setMostrarProductosAlternativos] = useState(false);
@@ -59,7 +62,7 @@ export default function ConsultarProductos() {
     lineaNombre: "",
     superLineaNombre: "",
     });
-  const [busquedaCatalogoActiva, setBusquedaCatalogoActiva] = useState(false); //guarda si el listado actual viene de esta búsqueda nueva.
+  const [busquedaCatalogoActiva, setBusquedaCatalogoActiva] = useState(false); //guarda si el listado actual viene de esta bÃºsqueda nueva.
   
   const [auditoria, setAuditoria] = useState<Auditoria>({} as Auditoria);
   const isMounted = useRef(false);
@@ -67,7 +70,7 @@ export default function ConsultarProductos() {
 
   
    // =========================
-    // PAGINACIÓN
+    // PAGINACIÃ“N
     // =========================
     const {
       paginaActual,
@@ -94,14 +97,14 @@ export default function ConsultarProductos() {
 
   const filtrosInicialesConsultarProducto = useFiltrosIniciales("consultar-producto");
 
-    // Contexto de catálogos
+    // Contexto de catÃ¡logos
   const {
     setLineas,
     setMarcas,
     setProveedores,
   } = useCatalogosContext();
   
-  // Setear qué filtros mostrar en la sidebar
+  // Setear quÃ© filtros mostrar en la sidebar
   useEffect(() => {
     limpiarFiltros();
     setBuscar({ cont: 0, componente: "consultar-producto" });
@@ -149,7 +152,7 @@ export default function ConsultarProductos() {
   const { showConfirmation, AlertasConfirmacion } = useConfirmation();
   
   // =========================
-    // IMPRESIÓN
+    // IMPRESIÃ“N
     // =========================
     const {
       handleImprimirTodo,
@@ -241,7 +244,7 @@ export default function ConsultarProductos() {
     const confirmed = await showConfirmation({
       type: TipoAlertaConfirmacion.DESTRUCTIVE,
       title: TituloAlertaConfirmacion.DESTRUCTIVE,
-      message: "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
+      message: "Â¿EstÃ¡s seguro de que quieres eliminar este elemento? Esta acciÃ³n no se puede deshacer.",
       confirmText: "Eliminar",
       cancelText: "Cancelar",
       onConfirm: () => {},
@@ -264,7 +267,7 @@ export default function ConsultarProductos() {
       addAlert({
         type: TipoAlerta.ERROR,
         title: TituloAlerta.ERROR,
-        message: "No se puede eliminar este elemento porque está siendo utilizada por uno o más productos.",
+        message: "No se puede eliminar este elemento porque estÃ¡ siendo utilizada por uno o mÃ¡s productos.",
         autoClose: true,
         duration: 3000,
       });
@@ -299,6 +302,18 @@ export default function ConsultarProductos() {
     setProductoInfo({} as Producto);
   };
 
+  // Se consulta el producto completo porque el modal necesita mostrar su stock actual.
+  const handleMostrarAjusteStock = async (id: number) => {
+    if (!id) return;
+    const producto = await ProductoService.obtenerId(id);
+    setProductoInfo(producto);
+    setMostrarAjusteStock(true);
+  };
+
+  const handleCerrarAjusteStock = () => {
+    setMostrarAjusteStock(false);
+    setProductoInfo({} as Producto);
+  };
   const handleMostrarHistorialPrecios = async (id: number) => {
     if (id) {
       const producto = await ProductoService.obtenerId(id);
@@ -433,8 +448,8 @@ export default function ConsultarProductos() {
   };
 
   const handleBuscarCatalogo = async (reiniciarPagina = false) => {
-  setBusquedaRapida(false); //Desactiva la etiqueta roja “Búsqueda rápida”, porque la búsqueda nueva ya no es búsqueda de código
-  setBusquedaCatalogoActiva(true); //Marca que ahora la tabla muestra resultados de denominación, Línea y SuperLínea.
+  setBusquedaRapida(false); //Desactiva la etiqueta roja â€œBÃºsqueda rÃ¡pidaâ€, porque la bÃºsqueda nueva ya no es bÃºsqueda de cÃ³digo
+  setBusquedaCatalogoActiva(true); //Marca que ahora la tabla muestra resultados de denominaciÃ³n, LÃ­nea y SuperLÃ­nea.
   setLoading(true);
   setErrorBusquedaCatalogo(null);
   if (reiniciarPagina) {
@@ -445,15 +460,15 @@ export default function ConsultarProductos() {
       denominacion: filtrosCatalogo.denominacion,
       lineaNombre: filtrosCatalogo.lineaNombre,
       superLineaNombre: filtrosCatalogo.superLineaNombre,
-      skip: reiniciarPagina ? 0 : skip, //Si acabás de cambiar un filtro, consulta desde el primer resultado (0). Si solamente cambiaste de página, usa el skip de la página actual.
+      skip: reiniciarPagina ? 0 : skip, //Si acabÃ¡s de cambiar un filtro, consulta desde el primer resultado (0). Si solamente cambiaste de pÃ¡gina, usa el skip de la pÃ¡gina actual.
       take,
     });
 
     setProductos(productosFiltrados.data);
     setEntidadesTotales(productosFiltrados.total);
-  } catch (error) { //muestra un error si falla la petición
-    console.error("Error al buscar productos en el catálogo:", error);
-    setErrorBusquedaCatalogo("No se pudo completar la búsqueda combinada. La lista anterior se conserva.");
+  } catch (error) { //muestra un error si falla la peticiÃ³n
+    console.error("Error al buscar productos en el catÃ¡logo:", error);
+    setErrorBusquedaCatalogo("No se pudo completar la bÃºsqueda combinada. La lista anterior se conserva.");
   } finally { //deja de mostrar el indicador de carga, salga bien o mal.
     setLoading(false);
   }
@@ -498,10 +513,10 @@ export default function ConsultarProductos() {
           <div className="flex flex-col">
             <div
               className="flex items-center gap-1 truncate whitespace-nowrap max-w-[700px]"
-              title={typeof value === "string" ? `${value}${presentacion ? ` — ${presentacion}` : ""}${row.observacion ? `\n${row.observacion}` : ""}` : undefined}
+              title={typeof value === "string" ? `${value}${presentacion ? ` â€” ${presentacion}` : ""}${row.observacion ? `\n${row.observacion}` : ""}` : undefined}
             >
               <Star size={16} className={row.esAlternativo ? "text-red-500 shrink-0" : "text-yellow-500 shrink-0"} />
-              <span>{value}{presentacion ? ` — ${presentacion}` : ""}</span>
+              <span>{value}{presentacion ? ` â€” ${presentacion}` : ""}</span>
             </div>
             {row.observacion && <div className="text-sm text-gray-500 truncate max-w-[700px]">{row.observacion}</div>}
           </div>
@@ -551,8 +566,8 @@ export default function ConsultarProductos() {
                 onImprimirPagina={handleImprimirPagina}
                 filtrosCatalogo={filtrosCatalogo}
                 onChangeFiltrosCatalogo={(campo, valor) => {
-                  setFiltrosCatalogo((filtrosAnteriores) => ({ //Conservá los otros filtros.
-                  //Cambiá solamente el campo que el usuario editó.
+                  setFiltrosCatalogo((filtrosAnteriores) => ({ //ConservÃ¡ los otros filtros.
+                  //CambiÃ¡ solamente el campo que el usuario editÃ³.
                     ...filtrosAnteriores,
                     [campo]: valor,
                   }));
@@ -593,6 +608,8 @@ export default function ConsultarProductos() {
                 onEditar={handleAbrirActualizarProducto}
                 onInfo={handleMostrarInfo}
                 onHistorial={handleMostrarHistorialPrecios} //tar 15
+                onMovimientosStock={handleMostrarMovimientosStock}
+                onAjustarStock={handleMostrarAjusteStock}
                 onDelete={handleDelete}
               />
                 <div className="lg:hidden space-y-3">
@@ -616,7 +633,7 @@ export default function ConsultarProductos() {
               </CardContent>
             </Card>
 
-            {/* Paginación */}
+            {/* PaginaciÃ³n */}
             <div className="mt-6">
               <Paginacion
                 entidadesTotales={entidadesTotales}
@@ -658,7 +675,27 @@ export default function ConsultarProductos() {
         onSuccessAlta={handleSuccess}
         onSuccessActualizar={handleActualizarSuccess}
         onRefetch={handleBuscarProductos}
-      />
+      />      {/* Tarjeta 20: al guardar, se recarga la lista para reflejar el nuevo stock. */}
+      {mostrarAjusteStock && productoInfo && (
+        <AjustarStockModal
+          producto={productoInfo}
+          onClose={handleCerrarAjusteStock}
+          onSuccess={async (resultado) => {
+            addAlert({
+              type: resultado.alertaStockBajo ? TipoAlerta.WARNING : TipoAlerta.SUCCESS,
+              title: resultado.alertaStockBajo ? "Stock bajo" : TituloAlerta.SUCCESS,
+              message: resultado.alertaStockBajo
+                ? "El ajuste fue aplicado. Atención: el producto quedó con stock bajo."
+                : "Stock actualizado correctamente.",
+              autoClose: true,
+              duration: 4000,
+            });
+            handleCerrarAjusteStock();
+            await handleBuscarProductos();
+          }}
+        />
+      )}
+
 
       {productoNotificacionSeleccionado && (
         <NotificacionModal
@@ -677,3 +714,6 @@ export default function ConsultarProductos() {
     </div>
   );
 }
+
+
+

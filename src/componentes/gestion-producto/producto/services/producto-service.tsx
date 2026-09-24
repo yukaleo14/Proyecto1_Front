@@ -1,12 +1,14 @@
-//Proporciona las operaciones para comunicarse con el backend
+﻿//Proporciona las operaciones para comunicarse con el backend
 import axios from "axios";
 import axiosConfig from "../../../../utils/axiosConfig";
-
 import { createCrudService } from "../../../../utils/crudFactory";
 import type { FormValues } from "../interfaces/interfaces-validaciones-producto";
 import ApiService from "../../../../utils/apiService";
-
 import type { HistorialPrecioProducto } from "../../../../interfaces/gestion-producto/historial-precios/interfaces-historial-precios"; //tar 15
+import type {
+  MovimientoStock,
+  ResultadoAjusteStock,
+} from "../../../../interfaces/gestion-producto/stock/interfaces-stock";
 
 const apiUrl = axiosConfig.apiUrl;
 
@@ -37,7 +39,7 @@ const ProductoService = {
       console.log(">> Payload PATCH:", payload);
 
       const result = await axios.patch(`${apiUrl}/producto/${id}/precios`, payload, { headers });
-      console.log(">> PATCH terminado con éxito:", result);
+      console.log(">> PATCH terminado con Ã©xito:", result);
       return result;
     } catch (error) {
       console.error("Error al actualizar producto:", error);
@@ -145,7 +147,7 @@ const ProductoService = {
     return data;
   },
 
-  buscarCatalogo: async (filtros: { //Crea una función para buscar productos desde esta pantalla.
+  buscarCatalogo: async (filtros: { //Crea una funciÃ³n para buscar productos desde esta pantalla.
   denominacion?: string;
   lineaNombre?: string;
   superLineaNombre?: string;
@@ -221,9 +223,42 @@ const ProductoService = {
     );
     return data;
     },
-  
-    
 
+  ajustarStock: async (
+    productoId: number,
+    cantidad: number,
+    motivo: string,
+    ): Promise<ResultadoAjusteStock> => {
+      const token = localStorage.getItem("Token");
+      const headers = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const { data } = await axios.post(
+        `${apiUrl}/producto/${productoId}/ajuste-stock`,
+        { cantidad, motivo },
+        { headers },
+      );
+
+      return data;
+  },
+
+  obtenerMovimientosStock: async (
+    productoId: number,
+    ): Promise<MovimientoStock[]> => {
+      const token = localStorage.getItem("Token");
+      const headers = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const { data } = await axios.get(
+        `${apiUrl}/producto/${productoId}/movimientos-stock`,
+        { headers },
+      );
+
+      return data;
+  },
 };
 
 export default ProductoService;
+

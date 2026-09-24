@@ -1,7 +1,5 @@
-import { Column, TablaAGGrid } from "../../../herramientas/tablas/tabla-flexible-ag-grid";
-import { ConsultarProducto, Producto} from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
-import { ActionButton } from "../../../herramientas/reutilizables/action-button";
-import { Info, Pencil, Trash } from "lucide-react";
+﻿import { Column, TablaAGGrid } from "../../../herramientas/tablas/tabla-flexible-ag-grid";
+import { ConsultarProducto } from "../../../../interfaces/gestion-producto/producto/interfaces-producto";
 import { ProductoActions } from "./producto-action";
 
 interface Props {
@@ -10,11 +8,13 @@ interface Props {
   puedeAccionar: boolean;
   onEditar: (id: number) => void;
   onInfo: (id: number) => void;
-  onHistorial: (id: number) => void; //tar 15
+  onHistorial: (id: number) => void;
+  onMovimientosStock: (id: number) => void;
+  onAjustarStock: (id: number) => void;
   onDelete: (id: number) => void;
-  
 }
 
+// Este componente solo transporta los eventos de cada fila hasta los botones.
 export function DatosTabla({
   productos,
   columns,
@@ -22,8 +22,9 @@ export function DatosTabla({
   onEditar,
   onInfo,
   onHistorial,
+  onMovimientosStock,
+  onAjustarStock,
   onDelete,
-  ...actions
 }: Props) {
   return (
     <div className="hidden lg:block overflow-x-auto">
@@ -38,14 +39,20 @@ export function DatosTabla({
                   onEditar={onEditar}
                   onInfo={onInfo}
                   onHistorial={onHistorial}
+                  onMovimientosStock={onMovimientosStock}
+                  onAjustarStock={onAjustarStock}
                   onDelete={onDelete}
                 />
               )
             : undefined
         }
-        actionsFlex={0.5}
+        // The six current actions remain visible; future actions can scroll horizontally.
+        actionsFlex={1.4}
+        actionsScrollable
         rowHeight={55}
       />
     </div>
   );
 }
+
+
