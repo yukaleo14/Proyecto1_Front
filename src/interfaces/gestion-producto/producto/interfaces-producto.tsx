@@ -88,6 +88,9 @@ export interface ConsultarProducto {
   codigoProveedor: string;
   codigoReferencia: string;
   stock: number;
+  // Valores que devuelve la consulta para visualizar el estado de stock en el catálogo.
+  stockMinimo: number;
+  utilizaStockMinimo: boolean;
   precio: number;
   precioOferta: number;
   ubicacion?: string | null;

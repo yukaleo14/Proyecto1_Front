@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef } from "react";
-import { Info, Pencil, Trash, Box, CircleDollarSign, Shuffle, Star } from "lucide-react";
+import { Info, Pencil, Trash, Box, CircleDollarSign, Shuffle, Star, AlertTriangle } from "lucide-react";
 import { Button } from "../../../ui/Button";
 import ProductoService from "../services/producto-service";
 import { formatCantidades, formatPrice } from "../../../herramientas/formateo-de-campos/fucion-formateo";
@@ -513,10 +513,10 @@ export default function ConsultarProductos() {
           <div className="flex flex-col">
             <div
               className="flex items-center gap-1 truncate whitespace-nowrap max-w-[700px]"
-              title={typeof value === "string" ? `${value}${presentacion ? ` â€” ${presentacion}` : ""}${row.observacion ? `\n${row.observacion}` : ""}` : undefined}
+              title={typeof value === "string" ? `${value}${presentacion ? ` — ${presentacion}` : ""}${row.observacion ? `\n${row.observacion}` : ""}` : undefined}
             >
               <Star size={16} className={row.esAlternativo ? "text-red-500 shrink-0" : "text-yellow-500 shrink-0"} />
-              <span>{value}{presentacion ? ` â€” ${presentacion}` : ""}</span>
+              <span>{value}{presentacion ? ` — ${presentacion}` : ""}</span>
             </div>
             {row.observacion && <div className="text-sm text-gray-500 truncate max-w-[700px]">{row.observacion}</div>}
           </div>
@@ -532,6 +532,33 @@ export default function ConsultarProductos() {
       editable:false,
       align:"left", 
       formatFunction: ({ value }) => <span>${formatPrice(value)}</span>,
+    },
+    {
+      header: "Stock",
+      accessor: "stock",
+      flex: 0.42,
+      type: "text",
+      editable: false,
+      align: "left",
+      // La regla se muestra aquí, pero se calcula con los valores que devuelve Producto.
+      // Un producto entra en alerta cuando stock actual es menor o igual a stock mínimo.
+      formatFunction: ({ value, row }) => {
+        const stockActual = Number(value ?? 0);
+        const stockMinimo = Number(row.stockMinimo ?? 0);
+        const estaBajoMinimo = stockActual <= stockMinimo;
+
+        return (
+          <span
+            className={`inline-flex items-center gap-1 font-medium ${
+              estaBajoMinimo ? "text-red-600" : "text-gray-800"
+            }`}
+            title={estaBajoMinimo ? `Stock bajo: mínimo definido ${stockMinimo}` : "Stock disponible"}
+          >
+            {estaBajoMinimo && <AlertTriangle size={16} aria-label="Stock bajo" />}
+            {stockActual}
+          </span>
+        );
+      },
     }
   ];
 
