@@ -19,7 +19,7 @@ const ApiService = {
       });
       return data;
     } catch (error) {
-      console.error(`GET ${url} →`, error);
+      console.error(`GET ${url} â†’`, error);
       throw error;
     }
   },
@@ -50,7 +50,7 @@ const ApiService = {
       });
       return data;
     } catch (error) {
-      console.error(`POST ${url} →`, error);
+      console.error(`POST ${url} â†’`, error);
       throw error;
     }
   },
@@ -62,20 +62,20 @@ const ApiService = {
       });
       return data;
     } catch (error) {
-      console.error(`PUT ${url} →`, error);
+      console.error(`PUT ${url} â†’`, error);
       throw error;
     }
   },
 
-  delete: async (url: string, usuarioId:number) => {
+  delete: async (url: string, usuarioId?: number) => {
     try {
       const { data } = await axios.delete(`${apiUrl}${url}`, {
         headers: getAuthHeaders(),
-        params: { usuarioId },
+        ...(usuarioId === undefined ? {} : { params: { usuarioId } }),
       });
       return data;
     } catch (error) {
-      console.error(`DELETE ${url} →`, error);
+      console.error(`DELETE ${url} â†’`, error);
       throw error;
     }
   },
@@ -87,7 +87,7 @@ const ApiService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`PATCH ${url} →`, error);
+      console.error(`PATCH ${url} â†’`, error);
       throw error;
     }
   }

@@ -49,7 +49,7 @@ export const menuItems: MenuItem[] = [
 
   {
     icon: ShoppingBag,
-    label: "Gestión Productos",
+    label: "GestiÃ³n Productos",
     path: "",
     subMenu: [
       {
@@ -60,11 +60,12 @@ export const menuItems: MenuItem[] = [
       },
       {
         icon: DollarSign,
-        label: "Configuración",
+        label: "ConfiguraciÃ³n",
         path: "",
         subMenu: [
           { icon: Tag, label: "Marca", path: "marca" },
-          { icon: Layers, label: "Líneas", path: "linea" },
+          { icon: Layers, label: "LÃ­neas", path: "linea" },
+          { icon: Layers, label: "SuperLíneas", path: "super-linea" },
         ],
         roles: [Rol.ADMINISTRADOR,Rol.ROOT,Rol.ROOT],
       },
@@ -75,7 +76,7 @@ export const menuItems: MenuItem[] = [
   
   {
     icon: Building,
-    label: "Organización",
+    label: "OrganizaciÃ³n",
     path: "",
     subMenu: [
       {
@@ -87,7 +88,7 @@ export const menuItems: MenuItem[] = [
       { icon: Users, label: "Proveedor", path: "proveedor", roles: [Rol.ADMINISTRADOR,Rol.ROOT] },
       { icon: Users, label: "Personal", path: "personal", visibleOnMobile: false, roles: [Rol.ADMINISTRADOR,Rol.ROOT] },
     ],
-    roles: [Rol.ADMINISTRADOR, Rol.VENDEDOR, Rol.REPARTIDOR, Rol.COBRADOR,Rol.ROOT], //acá aparece el rol permitido
+    roles: [Rol.ADMINISTRADOR, Rol.VENDEDOR, Rol.REPARTIDOR, Rol.COBRADOR,Rol.ROOT], //acÃ¡ aparece el rol permitido
   },
 
 ];

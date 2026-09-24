@@ -8,6 +8,7 @@ export interface FormValues {
   observacion?: string | null;
   stockMinimo?: number;
   utilizaStockMinimo?: boolean;
+  superLineaId: number;
 }
 
 export interface SublineasEnPayload {
@@ -24,9 +25,9 @@ export const schema = (utilizaStockMinimo: boolean) =>
       .string()
       .trim()
       .lowercase()
-      .required("La denominación es obligatoria.")
-      .max(255, "Máximo 255 caracteres.")
-      .matches(/^[A-Za-z0-9 áéíóúÁÉÍÓÚñÑ]+$/, "Solo se permiten letras, números y espacios."),
+      .required("La denominaciÃ³n es obligatoria.")
+      .max(255, "MÃ¡ximo 255 caracteres.")
+      .matches(/^[A-Za-z0-9 Ã¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ±Ã‘]+$/, "Solo se permiten letras, nÃºmeros y espacios."),
     observacion: yup.string().optional().nullable(),
     stockMinimo: yup.number().when([], {
       is: () => utilizaStockMinimo,
@@ -34,6 +35,7 @@ export const schema = (utilizaStockMinimo: boolean) =>
       otherwise: (schema) => schema.optional(),
     }),
     utilizaStockMinimo: yup.boolean().optional(),
+    superLineaId: yup.number().typeError("Debe seleccionar una SuperLínea para la línea").required("Debe seleccionar una SuperLínea para la línea").moreThan(0, "Debe seleccionar una SuperLínea para la línea").integer("Debe seleccionar una SuperLínea para la línea"),
    
   });
 
@@ -45,6 +47,6 @@ export const transformData = (linea: Linea): FormValues => {
     observacion: linea.observacion ?? null,
     stockMinimo: linea.stockMinimo ?? 0,
     utilizaStockMinimo: linea.utilizaStockMinimo ?? false,
+    superLineaId: linea.superLineaId ?? 0,
   };
 };
-
