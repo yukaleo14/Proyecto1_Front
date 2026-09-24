@@ -159,6 +159,11 @@ const marcaIdSeleccionada = watch("marcaId");
 //Para que el precio quede calculado automáticamente
 const costoActual = watch("costo");
 const margenActual = watch("porcentaje");
+//tar 12, cr 6 y 7
+const precioActual = watch("precio");
+const precioCambio =
+  producto &&
+  Number(precioActual) !== Number(producto.precio);
 //cr5, tar 10 - watch(...) observa un campo. Cuando cambia, React vuelve a renderizar 
 // el componente. AsÃ­ detectamos cambios de marca, lÃ­nea, valor de presentaciÃ³n, unidad y modo manual.
 const presentacionValor = watch("presentacionValor");
@@ -288,6 +293,21 @@ const superLineaActual = superLineas.find(
     let response: ResponsePost;
     // Compatibilidad con la API actual: exige estas banderas aunque ya no sean controles.
     // Al editar, conservar los datos heredados de pack; los productos nuevos no usan pack.
+    
+    //tar 12, cr 6 y 7
+    if (
+      producto &&
+      precioCambio &&
+      !formData.motivoCambioPrecio?.trim()
+    ) {
+      setError("motivoCambioPrecio", {
+        type: "manual",
+        message: "Debe ingresar un motivo para el cambio de precio",
+      });
+
+      return;
+    }
+
     const datosProducto = {
       ...formData,
       utilizaStockMinimo: true,
@@ -645,7 +665,13 @@ const superLineaActual = superLineas.find(
                       maxDigits={9}
                       disabled //evita que alguien escriba un precio arbitrario.
                     />
-
+                    {precioCambio && (
+                      <FormInput
+                        name="motivoCambioPrecio"
+                        label="Motivo del cambio de precio"
+                        placeholder="Ej.: Ajuste por inflación Q3"
+                      />
+                    )}
                     <p className="mt-1 text-xs text-gray-500">
                       Se calcula automáticamente según costo + margen.
                     </p>

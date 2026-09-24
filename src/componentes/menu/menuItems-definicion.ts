@@ -1,4 +1,4 @@
-import {
+﻿import {
   Layers,
   ShoppingBag,
   Tag,
@@ -49,7 +49,7 @@ export const menuItems: MenuItem[] = [
 
   {
     icon: ShoppingBag,
-    label: "GestiÃ³n Productos",
+    label: "GestiÃƒÂ³n Productos",
     path: "",
     subMenu: [
       {
@@ -60,13 +60,18 @@ export const menuItems: MenuItem[] = [
       },
       {
         icon: DollarSign,
-        label: "ConfiguraciÃ³n",
+        label: "ConfiguraciÃƒÂ³n",
         path: "",
         subMenu: [
           { icon: Tag, label: "Marca", path: "marca" },
-          { icon: Layers, label: "LÃ­neas", path: "linea" },
-          { icon: Layers, label: "SuperLíneas", path: "super-linea" },
-        ],
+          { icon: Layers, label: "LÃƒÂ­neas", path: "linea" },
+          { icon: Layers, label: "SuperLÃ­neas", path: "super-linea" },
+          {
+            icon: Banknote,
+            label: "Actualización de precios",
+            path: "cambio-precios-masivo",
+            roles: [Rol.ADMINISTRADOR, Rol.ROOT],
+          },        ],
         roles: [Rol.ADMINISTRADOR,Rol.ROOT,Rol.ROOT],
       },
     ],
@@ -76,7 +81,7 @@ export const menuItems: MenuItem[] = [
   
   {
     icon: Building,
-    label: "OrganizaciÃ³n",
+    label: "OrganizaciÃƒÂ³n",
     path: "",
     subMenu: [
       {
@@ -88,7 +93,8 @@ export const menuItems: MenuItem[] = [
       { icon: Users, label: "Proveedor", path: "proveedor", roles: [Rol.ADMINISTRADOR,Rol.ROOT] },
       { icon: Users, label: "Personal", path: "personal", visibleOnMobile: false, roles: [Rol.ADMINISTRADOR,Rol.ROOT] },
     ],
-    roles: [Rol.ADMINISTRADOR, Rol.VENDEDOR, Rol.REPARTIDOR, Rol.COBRADOR,Rol.ROOT], //acÃ¡ aparece el rol permitido
+    roles: [Rol.ADMINISTRADOR, Rol.VENDEDOR, Rol.REPARTIDOR, Rol.COBRADOR,Rol.ROOT], //acÃƒÂ¡ aparece el rol permitido
   },
 
 ];
+

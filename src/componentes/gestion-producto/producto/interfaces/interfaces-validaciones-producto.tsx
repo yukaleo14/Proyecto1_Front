@@ -125,6 +125,11 @@ export const schema = () =>
         const valor = this.parent.presentacionValor;
         return valor === undefined || valor === null || valor === "" || Boolean(unidad);
       }),
+
+    motivoCambioPrecio: yup //tar 12, cr 6 y 7
+    .string()
+    .nullable()
+    .max(255, "Máximo 255 caracteres."),
    /*  cantidadOferta: yup.number().when([], {
       is: () => usaOferta,
       then: (schema) => schema.required("La cantidad de oferta es obligatoria.").moreThan(0, "La cantidad de oferta debe ser mayor a 0."),
@@ -179,6 +184,7 @@ export const transformData = (producto: Producto): FormValues => {
     costo: producto.costo ?? null,
     precio: producto.precio ?? null,
     porcentaje: producto.porcentaje ?? null,
+    motivoCambioPrecio: null, //tar 12, cr 6 y 7
     
    // oferta: producto.oferta ?? null,
     /* costoEnDolar: producto.costoEnDolar ?? null,

@@ -151,9 +151,79 @@ const ProductoService = {
   superLineaNombre?: string;
   skip: number;
   take: number;
-  }) => {
-    return ApiService.get("/productos/buscar", filtros); // La ruta plural evita el conflicto con GET /producto/:id.
-},
+    }) => {
+      return ApiService.get("/productos/buscar", filtros); // La ruta plural evita el conflicto con GET /producto/:id.
+  },
+
+  //tar 12, cr 6 y 7
+  previsualizarAjusteMasivo: async (
+    alcance: "global" | "linea" | "super-linea",
+    valor: number,
+    usuarioId: number,
+    entidadId?: number
+  ) => {
+    const token = localStorage.getItem("Token");
+
+    const headers = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
+    const esPorcentaje =
+      alcance === "global" || alcance === "super-linea";
+
+    const ruta =
+      alcance === "global"
+        ? "/productos/precios/global/preview"
+        : alcance === "linea"
+          ? `/productos/precios/linea/${entidadId}/preview`
+          : `/productos/precios/super-linea/${entidadId}/preview`;
+
+    const { data } = await axios.post(
+      `${apiUrl}${ruta}`,
+      {
+        [esPorcentaje ? "porcentaje" : "monto"]: valor,
+        usuarioId,
+      },
+      { headers }
+    );
+
+    return data;
+  },
+  ejecutarAjusteMasivo: async (
+    alcance: "global" | "linea" | "super-linea",
+    valor: number,
+    usuarioId: number,
+    entidadId?: number
+  ) => {
+    const token = localStorage.getItem("Token");
+
+   const headers = token
+     ? { Authorization: `Bearer ${token}` }
+       : {};
+
+    const esPorcentaje =
+      alcance === "global" || alcance === "super-linea";
+
+    const ruta =
+      alcance === "global"
+        ? "/productos/precios/global/ejecutar"
+        : alcance === "linea"
+          ? `/productos/precios/linea/${entidadId}/ejecutar`
+          : `/productos/precios/super-linea/${entidadId}/ejecutar`;
+
+    const { data } = await axios.post(
+      `${apiUrl}${ruta}`,
+      {
+        [esPorcentaje ? "porcentaje" : "monto"]: valor,
+        usuarioId,
+      },
+      { headers }
+    );
+    return data;
+    },
+  
+    
+
 };
 
 export default ProductoService;
