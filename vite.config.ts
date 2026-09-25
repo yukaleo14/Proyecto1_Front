@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -10,4 +11,12 @@ export default defineConfig({
       usePolling: true, // Necesario para que Vite detecte cambios dentro del contenedor
     },
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+    include: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+    exclude: ['e2e/**', 'node_modules/**'],
+  },
 })
+

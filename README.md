@@ -20,6 +20,8 @@ Frontend del sistema de gestión integral de una distribuidora. Desarrollado con
 - **Animaciones**: Framer Motion
 - **Autenticación**: JWT Decode, Google OAuth y Facebook Login
 - **Estilos**: Tailwind CSS + CSS
+- **Testing Unitario y de Componentes**: Vitest, React Testing Library, jsdom
+- **Testing End-to-End (E2E)**: Playwright (Chromium)
 - **Linting**: ESLint
 - **Infraestructura**: Docker
 
@@ -333,11 +335,32 @@ Esta variable permite que el frontend desplegado se comunique con la API del bac
 
 ---
 
+## Testing / Pruebas Automatizadas
+
+El proyecto cuenta con una suite completa de testing automatizado dividida en dos niveles:
+
+### 1. Pruebas Unitarias y de Componentes (Vitest + React Testing Library)
+Ubicadas en `src/**/*.test.{ts,tsx}`, verifican lógica pura, funciones de utilidad y componentes aislados en entorno `jsdom`:
+* **Formateo y validaciones**: `fucion-formateo.test.ts` (precios con formato `1.234,56`, monedas ARS/USD, fechas, porcentajes y cantidades).
+* **Autenticación y Helpers**: `auth.test.ts` (decodificación JWT, verificación de roles e identificadores).
+* **Componentes UI**: `Button.test.tsx` (variantes, renderizado y estados deshabilitados).
+
+### 2. Pruebas End-to-End / E2E (Playwright)
+Ubicadas en la carpeta `e2e/`, simulan la interacción real del usuario navegando en un navegador Chromium real contra el servidor de desarrollo (`http://localhost:5173`):
+* **Autenticación y Rutas**: `e2e/auth.spec.ts` (formulario de login, validación de credenciales/empresa, redirección de rutas protegidas sin token).
+* **Navegación General**: `e2e/navigation.spec.ts` (carga inicial e integración de navegación).
+
+---
+
 ## Scripts disponibles
 
 ```bash
-npm run dev       # Ejecutar en modo desarrollo
-npm run build     # Generar build de producción
-npm run lint      # Ejecutar ESLint
-npm run preview   # Previsualizar el build de producción
+npm run dev          # Ejecutar en modo desarrollo
+npm run build        # Generar build de producción
+npm run lint         # Ejecutar ESLint
+npm run preview      # Previsualizar el build de producción
+npm test             # Ejecutar pruebas unitarias y de componentes (Vitest)
+npm run test:watch   # Modo observador (watch) interactivo para pruebas unitarias
+npm run test:e2e     # Ejecutar pruebas End-to-End (Playwright)
+npm run test:e2e:ui  # Interfaz gráfica interactiva para depuración de pruebas E2E
 ```
