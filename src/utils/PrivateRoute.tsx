@@ -22,42 +22,26 @@ interface DecodedToken {
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ allowedRoles }) => {
   const token = localStorage.getItem("Token");
   const location = useLocation();
-  let userRole: number | null = null;
-  const { showConfirmation, AlertasConfirmacion: AlertasConfirmacion } = useConfirmation();
-
-  const decodedToken: DecodedToken = jwtDecode(token);
-
-  if (!decodedToken.roles || !Array.isArray(decodedToken.roles)) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const userRoles = decodedToken.roles;
-
-  const hasPermission = userRoles.some(role =>
-    allowedRoles.includes(role)
-  );
-
+  const { showConfirmation, AlertasConfirmacion } = useConfirmation();
 
   if (!token) {
     // Si no está logueado, redirige a login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-
-  if (token) {
-    try {
-      const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
-      const userRoles = decodedToken.roles;
-      const hasPermission = userRoles.some(role =>
-        allowedRoles.includes(role)
-      );
-      if (hasPermission) {
-        return <Outlet />;
-      }
-      //userRole = decodedToken.rolId;
-    } catch (error) {
-      console.error("Error decoding token", error);
+  try {
+    const decodedToken = jwtDecode<DecodedToken>(token);
+    if (!decodedToken.roles || !Array.isArray(decodedToken.roles)) {
+      return <Navigate to="/login" replace />;
     }
+
+    const hasPermission = decodedToken.roles.some((role) => allowedRoles.includes(role));
+    if (hasPermission) {
+      return <Outlet />;
+    }
+  } catch (error) {
+    console.error("Error decoding token", error);
+    return <Navigate to="/login" replace />;
   }
 
 //  const userRoles = decodedToken.roles;
