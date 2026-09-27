@@ -1,4 +1,4 @@
-﻿// Dibuja el formulario y coordina el guardado, defaultValues = â€œvalores iniciales del formularioâ€.
+// Dibuja el formulario y coordina el guardado, defaultValues = â€œvalores iniciales del formularioâ€.
 import { useEffect, useRef, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -321,7 +321,7 @@ const superLineaActual = superLineas.find(
         const mensaje = [
           itemProdAlternativoSinAgregar ? "- Hay un producto alternativo sin agregar." : "",
           "",
-          "Â¿EstÃ¡s seguro de que querÃ©s registrar sin agregarlos?",
+          "¿Estás seguro de que querés registrar sin agregarlos?",
         ]
           .filter(Boolean)
           .join("\n");
@@ -438,9 +438,9 @@ const superLineaActual = superLineas.find(
           subtitle={
             producto
               ? producto.sistema > 0
-                ? "SÃ³lo puede visualizarse, no modificarse."
-                : "ModificÃ¡ los datos del producto."
-              : "CompletÃ¡ la identidad del producto y luego sus datos comerciales."
+                ? "Sólo puede visualizarse, no modificarse."
+                : "Modificá los datos del producto."
+              : "Completá la identidad del producto y luego sus datos comerciales."
           }
           icon={<Layers className="form-icon" />}
           onClose={onClose}
@@ -547,9 +547,7 @@ const superLineaActual = superLineas.find(
                       }}
                       className="text-black"
                       menuPortalTarget={document.body}
-                      styles={{
-                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                      }}
+                      styles={selectStyles}
                     />
                     {errors.presentacionUnidad && (
                       <small className="text-red-500">
@@ -733,26 +731,7 @@ const superLineaActual = superLineas.find(
                         }}
                         className="text-black"
                         menuPortalTarget={document.body}
-                        styles={{
-                          control: (base) => ({ ...base, color: "black" }),
-                          singleValue: (base) => ({
-                            ...base,
-                            color: "black",
-                          }),
-                          option: (base, { isSelected, isFocused }) => ({
-                            ...base,
-                            color: isSelected ? "white" : "black",
-                            backgroundColor: isSelected
-                              ? "#3b82f6"
-                              : isFocused
-                                ? "#93c5fd"
-                                : "white",
-                          }),
-                          menuPortal: (base) => ({
-                            ...base,
-                            zIndex: 9999,
-                          }),
-                        }}
+                        styles={selectStyles}
                       />
                       {errors.alicuotaIva && (
                         <small className="text-red-500">
@@ -826,6 +805,22 @@ const superLineaActual = superLineas.find(
     </div>
   );
 }
+
+const selectStyles = {
+  control: (base: any) => ({ ...base, color: "black" }),
+  singleValue: (base: any) => ({ ...base, color: "black" }),
+  option: (base: any, { isSelected, isFocused }: any) => ({
+    ...base,
+    color: isSelected ? "white" : "black",
+    backgroundColor: isSelected
+      ? "#3b82f6"
+      : isFocused
+        ? "#93c5fd"
+        : "white",
+  }),
+  menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+};
+
 
 
 

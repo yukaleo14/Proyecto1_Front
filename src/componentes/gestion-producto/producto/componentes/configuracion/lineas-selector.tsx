@@ -1,4 +1,4 @@
-﻿import Select from "react-select";
+import Select from "react-select";
 import { PlusCircle } from "lucide-react";
 import { Linea, SelectLinea } from "../../../../../interfaces/gestion-producto/linea/interfaces-linea";
 import { SelectSublinea, SubLinea } from "../../../../../interfaces/gestion-producto/sublinea/interfaces-sublinea";
@@ -50,7 +50,7 @@ export default function LineasSelector({
   return (
     <div className="border border-gray-300 rounded-lg p-2 shadow-sm bg-gray-100">
       <label className="block text-sm font-medium text-gray-700 py-1">
-        LÃ­neas
+        Líneas
       </label>
 
       <div className="flex gap-x-4">
@@ -101,7 +101,7 @@ export default function LineasSelector({
         <Button
           type="button"
           disabled={disabled}
-          title="Agregar LÃ­nea"
+          title="Agregar Línea"
           variant="outline"
           size="icon"
           className="bg-blue-500 text-white hover:bg-gray-700 w-10 h-10 rounded-full shadow-md transition"

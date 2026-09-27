@@ -165,10 +165,10 @@ export function SidebarMenus({ isOpen, onClose, onOpen }: SidebarMenusProps) {
                         ? toggleSubMenu(sub.label)
                         : handleNavigate(sub.path)
                     }
-                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-left transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-white text-gray-800 hover:bg-gray-100 rounded-lg text-left transition-colors"
                   >
                     <sub.icon className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                    <span className="text-sm font-medium flex-1">
+                    <span className="text-sm font-medium flex-1 text-gray-800">
                       {sub.label}
                     </span>
 
@@ -199,10 +199,10 @@ export function SidebarMenus({ isOpen, onClose, onOpen }: SidebarMenusProps) {
                           <button
                             key={sub2.label}
                             onClick={() => handleNavigate(sub2.path)}
-                            className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm transition-colors w-full text-left"
+                            className="flex items-center gap-2 px-3 py-2 bg-white text-gray-800 hover:bg-gray-100 rounded-lg text-sm transition-colors w-full text-left"
                           >
                             <sub2.icon className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                            {sub2.label}
+                            <span className="text-gray-800">{sub2.label}</span>
                           </button>
                         ))}
                     </div>
